@@ -1,0 +1,292 @@
+
+
+Rover Pros/Cons
+
+SPI Bus Topology Between Main Controller and Arm Controller
+	A	Shared on Main SPI Bus
+			This is the same as was done in 2012 and 2013. The Arm and Main controllers were both tied to the Lab Jack, an Ethernet-SPI bridge.
+			Pros:
+				Debugging might be easier, as both buses are present on the scope, no second harness for a second SPI bus needed.
+				Conserves resources on the microcontroller, only one SPI transceiver needed.
+					As the microcontroller can only write one transceiver at a time, and assuming the main controller does all UDP parsing,
+						only one bus should be active at a time anyway: Either receiving UDP packets from the Ethernet IC, or 
+						forwarding parsed commands from the UDP packet to the Arm and other peripherals.
+			Cons:
+				Debugging might be harder, as both busses are mixed in with each other. 
+				Potential that having one device crash the SPI bus will kill all communication. If the Arm Controller locked the bus up, 
+					then the Main Controller won't be able to receive commands. Dead arm is preferable to a dead rover.
+	B	Dedicated SPI Transceiver for Arm Controller
+			The ATmega 2560 can have each of its 4 UART transceivers configured to be SPI transceivers, yielding up to 5 dedicated SPI busses.
+			Pros:
+				Concurrent read and write operations can happen. The Main Controller can read UDP from the Ethernet IC while writing to the Arm.
+				Best survivability in SPI bus crash scenario: Only one peripheral taken offline. 
+					With the Backup R/C link, can control Arm even with dead Ethernet IC and corresponding dead SPI bus.
+					With loss of Arm Controller and crash of it's bus, still have comms with Ethernet IC.
+			Cons:
+				Loss of a UART transceiver. If this policy is extended to other SPI devices, then we may run out of UARTs.
+				Concurrency presents race conditions: What if the Main Controller wants to update Arm commands while they are being sent to Arm?
+					Hence, we enter the realm of RTOS, and scheduling and so forth. Must make locks on data and peripherals.
+					If the system only writes to the Arm after parsing a UDP packet, and UDP packets are evenly timed, this may work.
+					If the Ethernet IC decides to dump a bunch of UDP packets on the Main Controller, it should only parse the most recent one.
+					
+	Remarks:
+		Having the SPI bus crash depends on the failure mode of the respective ICs / Microcontrollers involved. AVR microcontrollers are supposed
+		to reboot with all pins set to "High-Z". The Ethernet IC should do the same. However, a coding error, cosmic ray, or static discharge can 
+		crash a microcontroller, and if the Watchdog mechanism does not reboot it, the failure state could include invalid SPI bus asserts.
+		
+	Verdict:
+		
+
+
+Base Station Implementation
+
+	A	Python
+			The most general-purpose programming language (or better defined: scripting language) in existence. Glues anything together.
+			Pros:
+				Has most of the programming libraries known to man, though not all are equal.
+					Has native UDP and Serial. Joystick / Xbox controller library (PyGame) is usable.
+				Very light-weight. The antithesis of LabView, Python is minimal in required instillation to get setup and running.
+					Hence, the base station controls aggregation and transmit functions could be all done on a BeagleBoneBlack/Raspi.
+					This would leave the laptops to just being the webcam viewers and backups to the BBB/Raspi. 
+				Although it is a "interpreted" language (aka scripting language), it can be compiled to an executable .exe file. 
+					Hence, a redistributable binary file can be shared to non-Python laptops.
+				Quite insensitive to platform developed on (in other words, it is very portable).
+			Cons:
+				Two different versions, and thus potential for bad code examples that are intended for 3.1 when you're using 2.7.
+				Libraries can be affected by / sensitive to which version of Python you are using. Most are written for 2.7 though.
+				Native GUI (Tk / Tkinter) is very dated.
+					Could use Qt, has bindings.
+					Example of making a wxPython GUI: http://zetcode.com/wxpython/
+			Unknown:
+			Verdict:
+				If we don't need to bother with making a GUI with push buttons and sliders and stuff, this is the environment to use.
+				It is easy to program in and share and collaborate on.
+				This should be the first environment to build a base station program for, a minimal rover control aggregator and network server.
+				After completing the base station in this environment, then we can build a GUI in Java or C++/C#
+				
+	
+	B	C#/C++
+			Powerful and prevalent languages, examples include the Global Hawk UAV GUI that NASA uses, and most other commercial/industrial projects.
+			Both are commonly written in a IDE Suite, with lots of helper mechanisms and libraries.
+			Pros:
+				Likely have well-polished joystick and game pad libraries available, as games are often written in C# and C++.
+				Same story for any other peripheral, like serial; Library probably exists and is well polished and up-to-date.
+				Potential for wonderful GUIs. These are *the* languages of GUI and graphical interaction development.
+					We could make an all-in-one program that displays video in the main panel/pane, cool buttons, etc.
+					I believe this is what the Missouri S&T Rover base station used. Their code may be online somewhere.
+				Strictly compiled languages, therefore, redistributable binaries.
+			Cons:
+				C# is known as Mono in Linux, the .NET Framework equivalent there. It only supports up to .NET 3.5 or something like that.
+					This means some functions that work in Windows won't work in Linux.
+				Very complex and high potential for fatal bugs (More so for C++ than C#).
+			Unknown:
+				
+			Verdict:
+				The most desirable environment to get working, as it offers the greatest reward and polish.
+				The dark side of this option: Most difficult to perfect and debug?
+				Tied with Java for target environment after Python base station is demonstrated.
+				
+	
+	C	LabView
+			Used on 2012 and 2013 Rover. Dan Hearn was the expert, interned at NI in 2012 and thus was master on 2013-season rover.
+			Super-unified environment where anything electro-mechanical is doable, provided you know how to do the graphical programming.
+			Pros:
+				Native support for Xbox and Joystick controllers.
+				Support for serial.
+				Fairly stable operation. Code debugging is simple as it is all graphical, right?
+				This system is what got the rover team closest to taking 1st place, and worked great (most of the time).
+			Cons:
+				Awkward UDP library included. Required constructing a clumsy buffer of bytes to be sent, using graphical programing hacks.
+				Horrendous install requirements: Several gigabytes, lots of bloatware and background processes.
+				Licensing issues: Must get a license, program visioning and forced obsolescence. Only environment on this list that must be paid for.
+				Cross-platform compatible? Nightmare to install in Linux? Seems to be Windows-borne.
+				Difficult collaboration and source-version control, and just weird environment in general. Everything is graphical programing.
+					Great for process visualization, but no exactly shareable, whereas text-based programming languages are easy Git targets.
+				Hard to learn the environment, requires a multi-week class that is sometimes taught at BYU by NI dude.
+				Non-Complied code: Must run a LabView session to interpret code. No binary to copy to and run on a non-Labview laptop.
+			Unknown:
+				Does it support multi-threading? Is multi-threading even important?
+				Is this hard in Linux? Or is Linux a non-issue for LabView now?
+				I mentioned forced obsolescence: Am I correct on that?
+			Verdict:
+				If we have the expertise in the team, this option has yielded the best results, despite its complexities.
+				For the mechanical engineers, this may be the favored option, as it is graphical programming, not text.
+				However, it is not a realistic option for us this year, unless someone is at the Dan Hearn level and the rest of the team steps back.
+	
+	D	Java
+			Was attempted last year (2014 season), with dismal results. Dismal, as in, Dallin got close, but it never was usable.
+			Dallin was attempting to do Multi-Threading, which I believe worked, but is not something any of us are versed in?
+			Pros:
+				Common language that many members of the team *should* be able to contribute to and learn from.
+				Is intermediate in terms of working example code out there and such.
+				Supports multi-threading
+				Fairly portable, if libraries used are cross-platform.
+				Can build GUIs (But they are very ugly).
+				The Arduino cousin and predecessor, Processing, is implemented in Java, and has several example projects with nice GUIs.
+				Can be compiled to executable binary for non-Java laptops.
+			Cons:
+				Old Serial Library (Means that using the Arm Puppet is questionable, as library may lose support for Windows at any time?)
+				No native libraries for joysticks and gaming inputs. Requires more obscure libraries.
+				Compiled binaries only usable on target operating system if libraries used are OS-specific. 
+					Examples of issues: Joysticks in Windows, serial in Linux; Easy in one, hard to cross to other.
+					Actually, I'm probably wrong on the above entry. But for sure, compiling for x64 loses things that x32 keeps.
+			Unknown:
+				Even with an old serial library, as long as it works, then it works. So, am I overly sensitive to old ragged libraries?
+			Verdict:
+				In between Python and C++/C#. Can do nice GUIs provided you find good graphical toolkit libraries. Even without such, 
+				can provide a functional controls aggregator and network frontend. Java can be finicky though, and may fall short in places.
+				After completing a Python base station implementation, this or C++/C# are the target environments to consider.
+					
+				
+	E	HTTP Webserver and Javascript and etc
+			It is possible to have the rover main controller host a webpage that is the GUI panel. Done in Raspberry Pi or BeagleBoneBlack.
+			Pros:
+				Ultimate cross-platform functionality: Anything that can display a web page and do Javascript.
+					This means, you could drive the rover with your smart phone or tablet.
+				Working examples include the OpenROV project, others?
+			Cons:
+				No Joystick or Game Pad. (Unless there is a Javascript function that can pull a joystick via HTTP?)
+				No Puppet Arm. (No Serial)
+				Requires having a main controller board that runs Linux. 
+					Or, it requires having such a board in close proximity to the Arduino Mega 2560 we've settled on.
+				How much finesse can you get with buttons and sliders on a web page?
+			Unknown:
+				Am I correct on what a web page can do? Can a webpage app pull a joystick on the client?
+			Verdict:
+				A cool experiment to try after finishing the base station GUI in Java or C++/C#.
+
+	Accumulated Verdicts:
+		Python first, Java or C++/C# later. Webserver as an experiment, and avoid LabView like the plague.
+
+
+
+
+
+
+
+8 Oct: Renewed debate and re-trial of Microcontroller Selection and Environment
+	Debate sparked after conversation with Neil. Two different paradigms, two different biases in how embedded is done. Also, my concerns on using Arduino.
+	A	Atmel AVR ATmega 2560 (Arduino Mega 2560) using only the Arduino Environment
+			Used in Arduino. Board is $45.
+			Pros:
+				Beginner friendly. Vast community of working projects and example code with hardware.
+				Does all the hard stuff in the background: Macros that create complex code structures, scripts to run AVR-GCC.
+				Has libraries written for just about everything, and shields for every application.
+				The Arduino Ethernet Shield has libraries already written.
+			Cons:
+				Not as powerful as Cypress solution (AVR is 16 MHz, Cypress 3x that.) Arduino overhead hampers full potential of the AVR.
+				Training Wheels: Nigh impossible to create a custom UART library for the Dynamixels? Can't access deep features w/o danger.
+				The PWM library is not as elegant or efficient as making our own custom PWM/PPM solution.
+				Interrupts are all on training wheels. Can't merely reconfigure UART3 as a Master SPI.
+			Unknown:
+				
+	B	Atmel AVR ATmega 2560 (Arduino Mega 2560) using native AVR-GCC and eschewing all Arduino anything. Possibly use AVR Studio instead.
+			Used in Arduino. Board is $45.
+			Pros:
+				Complete control over the way the firmware behaves. Full access to timers and peripherals. No helper functions as training wheels.
+				Complete control over interrupts, PWM, UART, everything. Can reconfigure UARTs to be SPI, for example.
+				Although the Arduino community is vast and awesome, there is a strong AVR developer community as well, like AvrFreaks.net .
+			Cons:
+				Do things the "old way": Make a Makefile, use the commandline or AVR Studio to compile with AVR-GCC.
+				Become as familiar with the ATmega 2560 Datasheet as Elder Holland is with the scriptures: Hunt down registers, read 100's of pages.
+				Using the Arduino Ethernet Shield means writing our own library. We will more likely just scrape from the Arduino library.
+				Although we can use any libraries that exist in Arduino, by definition we are departing the Arduino "operating system", 
+					so macros and dependant helper functions must be recreated/fixed.
+			Shortcomings of ATmega 2560 in general: Is 8-bit and limited to 16 MHz. May drive some people crazy who have experience in 32-bit micros.
+				The AVR-GCC complier makes 32-bit and 64-bit math and register transactions seamless, but it is slower in doing so on a 8-bit.
+			Unknown:
+				
+			
+	C	Cypress PSOC4 Breakout board
+			Board costs $4.
+			Pros:
+				IDE Environment makes configuration easy. You never have to set bits in registers or look at datasheets. Beginner friendly, yet powerful.
+				Complete configurability of processor ports and peripherals. Any thing any size any pin.
+				Operates much faster then the AVR devices. 32-bit Arm processor verses the puny 8-bit AVR architecture.
+				Full JTAG breakpoints and debugging capability. Debugging with AVR consists solely of printf and Logic Analyzer scoping, unless using 
+					the AVR Studio DebugWire mechanism, which basically does the same thing as the PSOC IDE with breakpoints, but not as powerful.
+				Small company with over-active support staff: Get quick answers and even code solutions to any questions you email to them.
+			Cons:
+				Well, you actually do spend lots of time looking at datasheets in the Cypress API, though for function signatures, not registers.
+					The potential exists that you must interpret two layers of abstraction: The registers for the peripherals, and the fabric, 
+					and the Cypress IDE macro injector, and a big mess.
+				For purists like me (Steve), it is difficult to approach, as you can't see everything going on. Code portability constrained by IDE:
+					Must have massive IDE installed to render the code and fabric connection diagrams. Impossible to compile without the IDE.
+				Repeatability is slightly hampered by the awesome ability of the PSOCs to reconfigure ports/periph in the fabric: Tutorials and 
+					open-source boards with code are not one-to-one with your board and configuration. So, reference materials and tutorials must be 
+					interpreted carefully. Tutorials and working examples are much more rare compared to the amount of Arduino and AVR community support.
+			Unknown:
+				
+			Remarks:
+				Possible to get a Ethernet IC breakout board for ~ $20, just have to create the intermediary board that routes the SPI bus.
+					As we are already making custom board/shields for whatever 
+				
+	Remarks in General:
+		We are sticking with off-the-shelf microcontroller boards, such that we can swap a damaged processor out for a new board.
+		Last season (2014), the beautiful control board got fried due to the Ethernet chip, right? Something that totaled the entire custom board, 
+			even though half the parts on it where still functional. Also happened in the 2012 season. I think we avoided board death in 2013.
+		We want to separate the subsystems as much as possible, such as: (Microcontroller Board)-(Ethernet Board)-(IMU Board)-(Connectors Board).
+			Make it so that any part can be swapped out and replaced or completely removed. Arduino does it well with stackable "shields".
+
+
+Star Topology verses Chain Topology
+	A	Chain Topology
+			Have the Rocket M2 send UDP packets only to the Main Control Board, which then parses commands and sends relevant orders to the Arm controller.
+			Pros:
+				One point of contact for networking. IP Configuration is only needed for the Main Control board's Ethernet IC.
+				Backup Control System only requires one point of contact (the Main Control board), no splitting as mentioned below.
+			Cons:
+				As explored in "SPI Bus Topology Between Main Controller and Arm Controller" above, various failure modes depending on SPI bus topology.
+				Two layers of parsing for commands to get to the Arm: The UDP frames to the Main Controller, then the SPI writes to the Arm Board.
+			Unknown:
+				
+	B	Star Topology
+			Rocket M2 broadcasts UDP packets to both the Main Control Board *and* the Arm Control Board.
+			Pros:
+				Each board has its own Ethernet IC: Same interface on both, hence debugging and developing comms on both is the same.
+				Far more redundant in that having the Main Controller board crash wouldn't kill the Arm as well. (Though good Arm on dead rover is dumb.)
+				Removes the requirement for an SPI to be used on both the Main and Arm boards. (Actually, both still do SPI, but to their Ethernet ICs.)
+			Cons:
+				Each board has its own Ethernet IC: More expensive, twice the networking headaches if Ethernet name resolution / DNS/MAC becomes obstinate.
+				The Backup Control system, which is the DragonLink sending PPM frames, must be split to both the Main and Arm boards.
+				Otherwise, if only the Main Control board receives the PPM frames, how does the Arm board get commands?
+					The solution: Keep the SPI connecting to the Arm board, in addition to the Arm boards own Ethernet connection. (Gross)
+					Alternative solution: Have the Main Controller Board generate UDP packets for the Arm in the Backup Link condition
+				Remark on the Backup Link: Why even have it to control the Arm, if it is only a emergency link to drive the rover?
+					Well, this is true: We want to use the Primary Control station for everything. Keep the emergency link minimal to driving only.
+					But, you have to admit, it would be cool to have complete side-channel control functionality. Say, the Rocket M2 dies with no spare?
+					The Backup link is also needed for the Mechanical Engineers to do in situ arm testing without having to fuss with code/computers.
+				If the the only link between the Main and Arm boards is Ethernet, the Arm is vulnerable if the Ethernet system fails.
+					If the Ethernet Router loses power, some other network error, the Backup Control link can only command the Main board.
+				
+			Unknown:
+				
+
+
+Winning 1st Place verses Letting Everyone Learn As Much As Possible
+	A	Winning 1st Place
+			Basically, buy everything off the shelf, use established Base stations (Like OpenROV, or APM Planner), and be as lazy as possible.
+				Basically, controlling the rover at 1km is as simple as just buying UAV hardware, using the DragonLink, and doing FPV telemetry.
+			Places emphasis on testing and training. Assigns people based on experience, some knowledge never being shared?
+			Conducive to a small group with lots of money and only some time for design and building.
+			
+	B	Everyone learns what they want
+			Being a educational institution, and being students, we want to learn and teach stuff.
+			Focuses on doing as much cool stuff as possible, even if a simpler solution exists.
+			Conducive to a large group with lots of money and lots of time.
+
+	C	Can we have our cake and eat it too? A mix of the two above options?
+
+
+
+
+
+
+
+
+
+
+
+
+
+

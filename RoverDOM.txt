@@ -1,0 +1,164 @@
+		UBNT
+DL		Down	Up
+Down	1		2
+Up		3		4
+
+1
+All Stop (DL in Failsafe yielding to UBNT, loss of UDP packets for period)
+
+2
+No Action (DL Failsafe is yield to UBNT)
+
+3 and 4
+DL if Asserted
+
+
+
+Base Station
+	Primary
+		Controls (Outputs to Rover)
+			Input Peripheral Devices
+				Joystick
+				Xbox Paddle
+				Arm Puppet
+					Power Input: 12v
+					Connect: PPM Injector
+						type: output
+						format: UART
+						level: 5v
+						wire: 2cp1 Molex Recpt
+							1: GND
+							2: TXO
+			Program System Inputs
+				Keyboard/Mouse Inputs
+				GUI Action Events
+				Serial Input Parsing: Arm Puppet FTDI/AVR_USB
+				CLI Console
+		Telemetry (Inputs from Rover)
+			Video via Webcam IP Server
+			UBNT Rocket M2 Management Web Page
+			Rover Systems
+				Battery Volts
+				System Amps
+			GPS & IMU
+				GPS NMEA Sentences
+				Accel/Gyro/Mag
+			Sensors
+				Soil pH
+				Soil Humidity
+		UBNT Rocket M2 Tranceiver
+			Power Input: Power over Ethernet
+			Connect: UBNT Blade Antenna
+				type: Antenna/MIMO
+				freq: 2.4 GHz
+				power: 500 mW?
+				format: pesudo-802.11b/n
+	Backup
+		Controls (Outputs to Rover)
+			Turnigy 9XR R/C Transmitter
+				Power Input: None (Internal Battery)
+				CH[1:2]: Drive
+				CH[3:4]: Pan/Tilt
+				CH[5:9]: Arm Mechanisms
+				Power Output: 5v
+				Connect: PPM Injector
+					type: output
+					format: PPM
+					level: 5v
+					wire: 3cp1Molex Plug
+						1: Ground
+						2: 12v
+						3: PPM
+			PPM Injector
+				Power Input: 12v
+				Power Output: 12v
+				Connect: Turnigy 9XR R/C Transmitter
+					type: input
+					format: PPM
+					level: 5v
+					wire: 3cp1 Molex Recpt
+						1: GND
+						2: 12v
+						3: PPM
+				Connect: Arm Puppet
+					type: input
+					format: UART
+					level: 5v
+					wire: 2cp1 Molex Plug
+						1: GND
+						2: RXI
+				Connect: DragonLink Tx Module
+					type: output
+					format: PPM
+					level: 5v
+					wire: 3cp1Molex Plug
+						1: Ground
+						2: 12v
+						3: PPM
+			DragonLink Tx Module
+				Power Input: 12v
+				Connect: void
+					name: Head Tracker
+				Connect: void
+					name: Data
+				Connect: PPM Injector
+					type: input
+					format: PPM
+					level: 5v
+					wire: 3cp1Molex Recpt
+						1: Ground
+						2: 12v
+						3: PPM
+				Connect: DragonLink Dipole Antenna
+					type: Antenna/Transmit-Only
+					freq: 430 MHz
+					power: 500 mW
+					format: FHSS
+		Telemetry (Inputs from Rover)
+			NTSC Video Display
+				Power Input: 12v
+				Connect: Video Receiver (VRx)
+					type: input
+					format: NTSC
+					level: 1vpp
+					wire: RCA Jack
+						Tip: Video
+						Ring: GND
+			Video Receiver (VRx)
+				Power Input: 12v
+				Connect: Video Telemetry Yagi Antenna
+					type: Antenna/Receive-Only
+					freq: 1.2 GHz
+					format: NTSC
+				Connect: NTSC Video Display
+	
+Rover
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
