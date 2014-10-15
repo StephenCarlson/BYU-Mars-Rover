@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+<Placemark>
+<name>Random Placemark</name>
+<Point>
+<coordinates>-111.6475577,40.2470031</coordinates>
+</Point>
+</Placemark>
+</kml>
