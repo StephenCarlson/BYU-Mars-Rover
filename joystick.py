@@ -7,11 +7,13 @@ import socket
 # UDP_IP = '127.0.0.255' # Broadcast Loopback
 # UDP_IP = '255.255.255.255' # Broadcast Sun Adapter
 # UDP_IP = '192.168.0.255' # Broadcast Local Network?
-UDP_IP = '71.195.237.116' # Broadcast
-UDP_PORT = 80
+# UDP_IP = '71.195.237.116' # Broadcast
+UDP_IP = '192.168.10.131' # Broadcast
+# UDP_PORT = 80
+UDP_PORT = 27015
 MESSAGE = "Rover Test Frame"
 
-FPS = 5
+FPS = 20
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1) # Broadcast
@@ -142,7 +144,7 @@ while done==False:
 		
 		textprintScr.unindent()		
 		
-		payload = repr(joystick.get_axis(2))
+		payload = repr(joystick.get_axis(0))
 		sock.sendto(payload, (UDP_IP, UDP_PORT))
 		
 
