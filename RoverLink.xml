@@ -1,8 +1,8 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="ISO-8859-1"?>
 <!-- 
 	BYU Mars Rover UDP Message Protocol, October 2014.
 	Mostly inspired by MAV Link: https://pixhawk.ethz.ch/mavlink/
-	Credits:
+	Credits: 
 		Steve Carlson
 		<Your name here>
 		
@@ -20,23 +20,25 @@
 		Two extremes: [Send every single variable as a separate packet/message] and [Send the entire set of variables at once in a huge message]
 		The protocol below strikes the balance between granularity and uniformity. Variables are packet into messages by what they control and how.
 		The parts of the protocol that need work are the packet anatomy; Do we need a Sequence counter? READ/WRITE bit?
+
+	xmlns="RoverLink.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 -->
-<roverlink>
-	<version>1</version>
+<roverlink xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="RoverLink.xsd">
+
+	<version>2</version>
 	<constants>
-		<constant name="READ_BIT"		value="0"	>The Message Id is bitwise ORed with this to designate read or write</constant>
+		<constant type="uint8_t"	name="READ_BIT"			value="0"	>The Message Id is bitwise ORed with this to designate read or write</constant>
 			<!-- More appropiate definition: Packets sent by Rover always have this bit cleared to 0. 
 				Anything the Basestation sends always has this bit set to 1 -->
 			<!-- Ah, actually, probably should keep the R/W function and allow basestation to send a read stimulus by sending a message with 
 				the Message ID being the requested message and this bit = 0. Rover should ignore contents of said stimulus packet and send 
 				the packet of the same Message ID. A stimulus message should have a blank payload. -->
-		<constant name="WRITE_BIT"		value="128"	>The Message Id is bitwise ORed with this to designate read or write</constant>
-		<constant name="PID_ERROR_MAX"	value="2000">PID Error is feedback position difference from commanded setpoint.</constant>
+		<constant type="uint8_t"	name="WRITE_BIT"		value="128"	>The Message Id is bitwise ORed with this to designate read or write</constant>
+		<constant type="int16_t"	name="PID_ERROR_MAX"	value="2000">PID Error is feedback position difference from commanded setpoint.</constant>
 	</constants>
 	<typedefs>
 		<typedef type="uint8_t"		name="systemState_t"></typedef>
 		<typedef type="uint16_t"	name="messageMask_t"></typedef>
-		<typedef type="uint8_t"		name="messageRate_t"></typedef>
 		<typedef type="uint8_t"		name="broadcast_t"></typedef>
 	</typedefs>
 	<enums>
@@ -72,32 +74,33 @@
 		</enum>
 		<enum name="MESSAGE_MASK" target="messageMask_t ##name"> <!-- Fantastically dangerious to use the "##" operator, is a precompiler macro,
 				but it was the only thing I could think of that describes capturing whatever variables use the messageMask_t typedef. -->
+				<!-- For this enum, may want to bring back param index element/attribute -->
 			<description>The Telemetry Config and One-Shot Message Mask. Basically, 2^(Message Id) forms the bitmask field.</description>
-			<entry value="1" 		name="HEALTH_HEARTBEAT"></entry>
-			<entry value="2" 		name="ROVER_STATUS"></entry>
-			<entry value="4" 		name="ARM_STATUS"></entry>
-			<entry value="8" 		name="RESERVED_1"></entry>
-			<entry value="16" 		name="GPS_POSITION"></entry>
-			<entry value="32" 		name="IMU_SAMPLE"></entry>
-			<entry value="64" 		name="RESERVED_2"></entry>
-			<entry value="128" 		name="DRAGONLINK_FRAME"></entry>
-			<entry value="256" 		name="DRIVE_SETPOINTS"></entry>
-			<entry value="512" 		name="VIDEO_SETPOINTS"></entry>
-			<entry value="1024"		name="ARM_SETPOINTS"></entry>
-			<entry value="2048"		name="ISHAAMA"></entry>
-			<entry value="4096"		name="LIFERAY"></entry>
-			<entry value="8192"		name="CUSTOM_DEBUG_3"></entry>
-			<entry value="16384"	name="CUSTOM_DEBUG_2"></entry>
-			<entry value="32768" 	name="CUSTOM_DEBUG_1"></entry>
+			<entry value="0x0001" name="HEALTH_HEARTBEAT"></entry>
+			<entry value="0x0002" name="ROVER_STATUS"></entry>
+			<entry value="0x0004" name="ARM_STATUS"></entry>
+			<entry value="0x0008" name="RESERVED_1"></entry>
+			<entry value="0x0010" name="GPS_POSITION"></entry>
+			<entry value="0x0020" name="IMU_SAMPLE"></entry>
+			<entry value="0x0040" name="RESERVED_2"></entry>
+			<entry value="0x0080" name="DRAGONLINK_FRAME"></entry>
+			<entry value="0x0100" name="DRIVE_SETPOINTS"></entry>
+			<entry value="0x0200" name="VIDEO_SETPOINTS"></entry>
+			<entry value="0x0400" name="ARM_SETPOINTS"></entry>
+			<entry value="0x0800" name="ISHAAMA"></entry>
+			<entry value="0x1000" name="LIFERAY"></entry>
+			<entry value="0x2000" name="CUSTOM_DEBUG_3"></entry>
+			<entry value="0x4000" name="CUSTOM_DEBUG_2"></entry>
+			<entry value="0x8000" name="CUSTOM_DEBUG_1"></entry>
 		</enum>
 		<enum name="BROADCAST_COMMAND" target="broadcastCommand">
 			<description></description>
-			<entry value="1" 		name="SAVE_FAILSAFE_VALUES_NOW">Save setpoint values for if link lost later.</entry>
-			<entry value="240" 		name="PANIC_STOP">If any of the upper 4 bits != 0, panic stop.</entry>
+			<entry value="0x01" 		name="SAVE_FAILSAFE_VALUES_NOW">Save setpoint values for if link lost later.</entry>
+			<entry value="0xF0" 		name="PANIC_STOP">If any of the upper 4 bits != 0, panic stop.</entry>
 		</enum>
 	</enums>
 	<messages>
-		<message id="0" name="HEALTH_HEARTBEAT" type="READ_ONLY">
+		<message id="0" name="HEALTH_HEARTBEAT" access="READ_ONLY">
 			<description>Each board must provide a status report of its health periodically.</description>
 			<field type="uint32_t"		name="systemTimestamp"								>Milliseconds from boot</field>
 			<field type="systemState_t"	name="systemState"	minValue="0" maxValue="3"		>System status code, see enum definition</field>
@@ -106,7 +109,7 @@
 			<field type="uint16_t"		name="ethernetErrors"								>Count of Ethernet errors</field>
 			<field type="uint16_t"		name="someOtherMetric"								>Probably packet lag time, etc</field>
 		</message>
-		<message id="1" name="ROVER_STATUS" type="READ_ONLY">
+		<message id="1" name="ROVER_STATUS" access="READ_ONLY">
 			<description>The Main Controller Board handles the Camera and Gimbal, Drive and Power systems.</description>
 			<field type="systemState_t"	name="systemState"		minValue="0"		maxValue="3"		>System status code, see enum definition</field>
 			<field type="uint16_t"		name="roverVoltage"		minValue="0"		maxValue="60000"	>Voltage in mV, Ex: 12450 means 12.450 Volts</field>
@@ -115,18 +118,18 @@
 			<field type="uint16_t"		name="ubntLinkInteg"	minValue="0"		maxValue="1000"		>100% means perfect link, 0% is lost link, in 0.1% units</field>
 			<field type="uint16_t"		name="dragonLinkRSSI"	minValue="0"		maxValue="1000"		>Same as ubntLinkInteg, for backup-link LRS receiver</field>
 		</message>
-		<message id="2" name="ARM_STATUS" type="READ_ONLY">
+		<message id="2" name="ARM_STATUS" access="READ_ONLY">
 			<description>The Arm Controller Board handles the Arm, including PID controllers. May also handle soil taster "ISHAAMA".</description>
 			<field type="uint8_t"	name="systemState"	minValue="0" maxValue="3"	>System status code</field>
 			<field type="uint16_t"	name="dynamixelErrors"							>Number of bad reads or writes to Dynamixel servos.</field>
-			<field type="int16_t"	name="pid1_error"	minValue="-PID_ERROR_MAX"	maxValue="PID_ERROR_MAX">Error as in the error term, a scalar value.</field>
-			<field type="int16_t"	name="pid2_error"	minValue="-PID_ERROR_MAX"	maxValue="PID_ERROR_MAX">Same as above, for the 2nd PID controller</field>
-			<field type="int16_t"	name="pid3_error"	minValue="-PID_ERROR_MAX"	maxValue="PID_ERROR_MAX">Same as above, for the 3rd PID controller</field>
+			<field type="int16_t"	name="pid1_error"	minValue="-2000"	maxValue="2000">Error as in the error term, a scalar value.</field>
+			<field type="int16_t"	name="pid2_error"	minValue="-2000"	maxValue="2000">Same as above, for the 2nd PID controller</field>
+			<field type="int16_t"	name="pid3_error"	minValue="-2000"	maxValue="2000">Same as above, for the 3rd PID controller</field>
 		</message>
-		<message id="3" name="RESERVED_1" type="READ_ONLY">
+		<message id="3" name="RESERVED_1" access="READ_ONLY">
 			<description>Reserved for future use.</description>
 		</message>
-		<message id="4" name="GPS_POSITION" type="READ_ONLY">
+		<message id="4" name="GPS_POSITION" access="READ_ONLY">
 			<description>Parsed NMEA sentence data. May disband these fields in favor of echoing entire NMEA sentence.</description>
 			<field type="int32_t"	name="lat"		minValue="-899999999"	maxValue="899999999"	>Latitude in 1E-7 units</field>
 			<field type="int32_t"	name="lon"		minValue="-1799999999"	maxValue="1799999999"	>Longitude in 1e-7 units</field>
@@ -138,7 +141,7 @@
 			<field type="uint8_t"	name="fix_type"	minValue="0"			maxValue="3"			>Fix Type, see the enum definition</field>
 			<field type="uint8_t"	name="sats"		minValue="0"			maxValue="30"			>Number of satellites locked on</field>
 		</message>
-		<message id="5" name="IMU_SAMPLE" type="READ_ONLY">
+		<message id="5" name="IMU_SAMPLE" access="READ_ONLY">
 			<description>The samples from the IMU, probably a MPU-9250. North-East-Down conventions.</description>
 			<field type="int16_t" name="xacc"	>X Acceleration, Front+</field>
 			<field type="int16_t" name="yacc"	>Y Acceleration, Starboard+</field>
@@ -150,10 +153,10 @@
 			<field type="int16_t" name="ymag"	>Y B-Field Component</field>
 			<field type="int16_t" name="zmag"	>Z B-Field Component</field>
 		</message>
-		<message id="6" name="RESERVED_2" type="READ_ONLY">
+		<message id="6" name="RESERVED_2" access="READ_ONLY">
 			<description>Reserved for future use.</description>
 		</message>
-		<message id="7" name="DRAGONLINK_FRAME" type="READ_ONLY">
+		<message id="7" name="DRAGONLINK_FRAME" access="READ_ONLY">
 			<description>The DragonLink LRS is the backup R/C receiver on the rover, for if the Rocket M2 modems lose link.</description>
 			<field type="uint16_t" name="ppmCh1" minValue="800" maxValue="2200" initValue="1500">Channel 1, usually Roll (Rover Left-Right)</field>
 			<field type="uint16_t" name="ppmCh2" minValue="800" maxValue="2200" initValue="1500">Channel 2, usually Pitch (Rover Foward-Back)</field>
@@ -164,19 +167,19 @@
 			<field type="uint16_t" name="ppmCh7" minValue="800" maxValue="2200" initValue="1500">Channel 7, Backup-Link Asserts control if >1800us, doubles as Panic Stop</field>
 			<field type="uint16_t" name="ppmCh8" minValue="800" maxValue="2200" initValue="1500">Channel 8, DragonLink in Failsafe Mode if >1800us</field>
 		</message>
-		<message id="8" name="DRIVE_SETPOINTS" type="READ_WRITE">
+		<message id="8" name="DRIVE_SETPOINTS" access="READ_WRITE">
 			<description>Drive commands for rover movement.</description>
 			<field type="int16_t" name="driveFwd"	minValue="-1000" maxValue="1000" initValue="0">Forward Drive Component</field>
 			<field type="int16_t" name="driveTurn"	minValue="-1000" maxValue="1000" initValue="0">Turning Drive Component</field>
 		</message>
-		<message id="9" name="VIDEO_SETPOINTS" type="READ_WRITE">
+		<message id="9" name="VIDEO_SETPOINTS" access="READ_WRITE">
 			<description>Camera selection and zoom, Gimbal Pan and Tilt.</description>
 			<field type="int16_t"	name="gimbalPan"	minValue="-1000"	maxValue="1000"	initValue="0">Gimbal Pan Value</field>
 			<field type="int16_t"	name="gimbalTilt"	minValue="-1000"	maxValue="1000"	initValue="0">Gimbal Tilt Value</field>
 			<field type="uint16_t"	name="gimbalZoom"	minValue="0"		maxValue="1000"	initValue="0">Gimbal Zoom Value</field>
 			<field type="int8_t"	name="camSelect"	minValue="0"		maxValue="8"	initValue="0">Camera Mux Selector</field>
 		</message>
-		<message id="10" name="ARM_SETPOINTS" type="READ_WRITE">
+		<message id="10" name="ARM_SETPOINTS" access="READ_WRITE">
 			<description>Arm/joint positions and Drill and Claw setpoints.</description>
 			<field type="int16_t" name="baseAzimuth"	minValue="-1000" maxValue="1000" initValue="0">Also known as turret, pans entire arm</field>
 			<field type="int16_t" name="shoulder"		minValue="-1000" maxValue="1000" initValue="0">Shoulder: first pitch joint</field>
@@ -186,16 +189,16 @@
 			<field type="int16_t" name="effectorA"		minValue="-1000" maxValue="1000" initValue="0">Open/Close Claw</field>
 			<field type="int16_t" name="effectorB"		minValue="-1000" maxValue="1000" initValue="0">Roller or Drill, configuration-dependant</field>
 		</message>
-		<message id="11" name="ISHAAMA" type="READ_WRITE">
+		<message id="11" name="ISHAAMA" access="READ_WRITE">
 			<description>The soil taste tester. Likely is Read-Only, nothing to write to. Assuming 12-bit ADC</description>
 			<field type="uint16_t" name="hygrometer"	minValue="0" maxValue="4095">The Soil Hygrometer probe</field>
 			<field type="uint16_t" name="phMeter"		minValue="0" maxValue="4095">The Soil ph Meter probe</field>
 		</message>
-		<message id="12" name="LIFERAY" type="READ_WRITE">
+		<message id="12" name="LIFERAY" access="READ_WRITE">
 			<description>Big scary laser.</description>
 			<field type="uint8_t" name="laserDutyCycle" minValue="0" maxValue="255" initValue="0">Set the laser's intensity</field>
 		</message>
-		<message id="13" name="CUSTOM_DEBUG_1" type="READ_WRITE">
+		<message id="13" name="CUSTOM_DEBUG_1" access="READ_WRITE">
 			<description>All the custom fields can be anything, but the payload size (16 bytes) is constant.</description>
 			<field type="uint16_t" name="custom00">Dynamixel Servo 1 Stress/Current Value</field>
 			<field type="uint16_t" name="custom01">Dynamixel Servo 2 Stress/Current Value</field>
@@ -206,7 +209,7 @@
 			<field type="uint16_t" name="custom06">Description</field>
 			<field type="uint16_t" name="custom07">Description</field>
 		</message>
-		<message id="14" name="CUSTOM_DEBUG_2" type="READ_WRITE">
+		<message id="14" name="CUSTOM_DEBUG_2" access="READ_WRITE">
 			<description>All the custom fields can be anything, but the payload size (16 bytes) is constant.</description>
 			<field type="uint16_t" name="custom20">Description</field>
 			<field type="uint16_t" name="custom21">Description</field>
@@ -217,7 +220,7 @@
 			<field type="uint16_t" name="custom26">Description</field>
 			<field type="uint16_t" name="custom27">Description</field>
 		</message>
-		<message id="15" name="CUSTOM_DEBUG_3" type="READ_WRITE">
+		<message id="15" name="CUSTOM_DEBUG_3" access="READ_WRITE">
 			<description>All the custom fields can be anything, but the payload size (16 bytes) is constant.</description>
 			<field type="uint16_t" name="custom30">Description</field>
 			<field type="uint16_t" name="custom31">Description</field>
@@ -228,46 +231,50 @@
 			<field type="uint16_t" name="custom36">Description</field>
 			<field type="uint16_t" name="custom37">Description</field>
 		</message>
-		<message id="100" name="PING" type="READ_WRITE">
+		<message id="80" name="PING" access="READ_WRITE">
 			<description>Used to verify that the entire UDP comm system is functional. Payload proves this if uniquely generated at basestation and compared to response.</description>
-			<field type="uint8_t" name="payload[8]">Description</field>
+			<field type="uint8_t[8]" name="payload">Description</field>
 		</message>
-		<message id="101" name="TELEMETRY_CONFIG" type="READ_WRITE">
+		<message id="81" name="TELEMETRY_CONFIG" access="READ_WRITE">
 			<description>The 16 rover messages can be assigned to send cyclically by setting bits in these bitmasks.</description>
 			<field type="messageMask_t" name="telemetryMask_10HZ"	initValue="0b0000000000000110">Fast Telemetry Loop</field>
 			<field type="messageMask_t" name="telemetryMask_1HZ"	initValue="0b0011111110110001">Intermediate Loop</field>
 			<field type="messageMask_t" name="telemetryMask_10SEC"	initValue="0b0100000000000000">Slow Loop</field>
 		</message>
-		<message id="102" name="REQUEST_FIELDS_ONESHOT" type="WRITE_ONLY">
+		<message id="82" name="REQUEST_FIELDS_ONESHOT" access="WRITE_ONLY">
 			<description>Just one time instead of configuring continuous telemetry. Probably superfiluous if Read/Write mechanism of this protocol can stimulate a single register.</description>
 			<field type="messageMask_t" name="oneShotMask">Request a set of messages only one time, not set for cyclic</field>
 		</message>
-		<message id="127" name="BROADCAST" type="WRITE_ONLY">
+		<message id="127" name="BROADCAST" access="WRITE_ONLY">
 			<description>Broadcast a message to all controller boards at once. Used for universal commands like Panic Stop, etc</description>
 			<field type="broadcast_t" name="broadcastCommand" minValue="0" maxValue="255" initValue="0">See broadcast_t description</field>
 		</message>
 	</messages>
-	<packet_anatomy>
-		<frame>
-			<ethernet_header/>
-			<ip4_header/>
-			<udp_header/> <!-- Note on ports: 1024 through 49151 are registered ports (Use these), 49152 through 65535 are Ephemeral (Avoid)-->
-			<udp_data>
-				<roverlink_frame>
-					<src_board_id 	bits="4">Source/Originating device. 0x00 for Basestation, see BOARD_ID enum for others</board_id>
-					<dst_board_id 	bits="4">Intended Recipient device. 0x01 for Main Controller, see BOARD_ID enum for others</board_id>
-					<read_write_bit	bits="1">The address byte's MSB is 0 for read stimulus packets, 1 for setpoint write packets</read_write_bit>
-					<message_id 	bits="7">ROVER_STATUS would give 0x01 for this field</message_id>
-					<sequence_cnt 	bits="16">Packet unique number, rolls over at 65535</sequence_cnt>
-					<payload_len	bits="8">Payload size</payload_len>
-					<payload />
-				</roverlink_frame>
-			</udp_data>
-			<ethernet_padding/>
-		</frame>
-	</packet_anatomy>
+
 </roverlink>
 
+<!-- Packet Anatomy 
+<packet_anatomy>
+	<frame>
+		<ethernet_header/>
+		<ip4_header/>
+		<udp_header/>
+		<udp_data>
+			<roverlink_frame>
+				<src_board_id 	bits="4">Source/Originating device. 0x00 for Basestation, see BOARD_ID enum for others</src_board_id>
+				<dst_board_id 	bits="4">Intended Recipient device. 0x01 for Main Controller, see BOARD_ID enum for others</dst_board_id>
+				<read_write_bit	bits="1">The address byte's MSB is 0 for read stimulus packets, 1 for setpoint write packets</read_write_bit>
+				<message_id 	bits="7">ROVER_STATUS would give 0x01 for this field</message_id>
+				<sequence_cnt 	bits="16">Packet unique number, rolls over at 65535</sequence_cnt>
+				<payload_len	bits="8">Payload size</payload_len>
+				<payload />
+			</roverlink_frame>
+		</udp_data>
+		<ethernet_padding/>
+	</frame>
+</packet_anatomy>
+-->
+<!-- Note on ports: 1024 through 49151 are registered ports (Use these), 49152 through 65535 are Ephemeral (Avoid)-->
 
 <!-- Example Byte Runs
 
