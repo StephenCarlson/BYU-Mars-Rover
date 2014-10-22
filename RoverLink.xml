@@ -27,14 +27,8 @@
 
 	<version>2</version>
 	<constants>
-		<constant type="uint8_t"	name="READ_BIT"			value="0"	>The Message Id is bitwise ORed with this to designate read or write</constant>
-			<!-- More appropiate definition: Packets sent by Rover always have this bit cleared to 0. 
-				Anything the Basestation sends always has this bit set to 1 -->
-			<!-- Ah, actually, probably should keep the R/W function and allow basestation to send a read stimulus by sending a message with 
-				the Message ID being the requested message and this bit = 0. Rover should ignore contents of said stimulus packet and send 
-				the packet of the same Message ID. A stimulus message should have a blank payload. -->
-		<constant type="uint8_t"	name="WRITE_BIT"		value="128"	>The Message Id is bitwise ORed with this to designate read or write</constant>
-		<constant type="int16_t"	name="PID_ERROR_MAX"	value="2000">PID Error is feedback position difference from commanded setpoint.</constant>
+		<constant type="uint8_t" name="WRITE_BIT"	value="0x08">The Message Id is bitwise ORed with this to designate a write</constant>
+		<constant type="uint8_t" name="REQUEST_BIT"	value="0x04">The Message Id is bitwise ORed with this to designate a request</constant>
 	</constants>
 	<typedefs>
 		<typedef type="uint8_t"		name="systemState_t"></typedef>
@@ -46,16 +40,16 @@
 			<description>List of possible alises. Each board belongs to only one kind of alias/group.</description>
 				<!-- This lets our boards be UDP port and IP Address agnostic. No reason to fret about IP addresses on the rover or basestation -->
 			<entry value="0" name="BASESTATION">
-				<description>The Primary Basestation, and any other Ethernet-connected devices that send packets to the rover.</description></entry>
-					<!-- Wow! Potential for conflict! Allowing for other devices with their own agenda means conflicting orders if overlapped -->
+				<description>The Primary Basestation</description></entry>
 			<entry value="1" name="MAIN_CONTROLLER">
-				<description>There should only be a single Main Controller board, with Drive, Camera, Gimbal and Power control responsibilities.</description></entry>
+				<description>Only a single Main Controller board, with Drive, Camera, Gimbal and Power control responsibilities.</description></entry>
 			<entry value="2" name="ARM_CONTROLLER">
-				<description>Probably only a single Arm Controller board, solely responsible for the arm and other related systems.</description></entry>
+				<description>Only a single Arm Controller board, solely responsible for the arm and other related systems.</description></entry>
+			<entry value="8" name="BASESTATION_2">
+				<description>A second Ethernet device in the basestation tent, possibly the Arm Puppet.</description></entry>
 		</enum>
 		<enum name="SYSTEM_STATE" target="systemState">
 			<description>systemState field in the heartbeat and status messages that indicates board health</description>
-			<!-- Probably should put the pairs minValue="0" maxValue="3" here somewhere instead of in each instance of systemState-->
 			<entry value="0" name="STARTUP">
 				<description>Initial State, board is booting up.</description></entry>
 			<entry value="1" name="NORMAL">
@@ -74,7 +68,6 @@
 		</enum>
 		<enum name="MESSAGE_MASK" target="messageMask_t ##name"> <!-- Fantastically dangerious to use the "##" operator, is a precompiler macro,
 				but it was the only thing I could think of that describes capturing whatever variables use the messageMask_t typedef. -->
-				<!-- For this enum, may want to bring back param index element/attribute -->
 			<description>The Telemetry Config and One-Shot Message Mask. Basically, 2^(Message Id) forms the bitmask field.</description>
 			<entry value="0x0001" name="HEALTH_HEARTBEAT"></entry>
 			<entry value="0x0002" name="ROVER_STATUS"></entry>
@@ -94,7 +87,7 @@
 			<entry value="0x8000" name="CUSTOM_DEBUG_1"></entry>
 		</enum>
 		<enum name="BROADCAST_COMMAND" target="broadcastCommand">
-			<description></description>
+			<description>Broadcast Message</description>
 			<entry value="0x01" 		name="SAVE_FAILSAFE_VALUES_NOW">Save setpoint values for if link lost later.</entry>
 			<entry value="0xF0" 		name="PANIC_STOP">If any of the upper 4 bits != 0, panic stop.</entry>
 		</enum>
@@ -231,21 +224,21 @@
 			<field type="uint16_t" name="custom36">Description</field>
 			<field type="uint16_t" name="custom37">Description</field>
 		</message>
-		<message id="80" name="PING" access="READ_WRITE">
+		<message id="60" name="PING" access="READ_WRITE">
 			<description>Used to verify that the entire UDP comm system is functional. Payload proves this if uniquely generated at basestation and compared to response.</description>
 			<field type="uint8_t[8]" name="payload">Description</field>
 		</message>
-		<message id="81" name="TELEMETRY_CONFIG" access="READ_WRITE">
+		<message id="61" name="TELEMETRY_CONFIG" access="READ_WRITE">
 			<description>The 16 rover messages can be assigned to send cyclically by setting bits in these bitmasks.</description>
 			<field type="messageMask_t" name="telemetryMask_10HZ"	initValue="0b0000000000000110">Fast Telemetry Loop</field>
 			<field type="messageMask_t" name="telemetryMask_1HZ"	initValue="0b0011111110110001">Intermediate Loop</field>
 			<field type="messageMask_t" name="telemetryMask_10SEC"	initValue="0b0100000000000000">Slow Loop</field>
 		</message>
-		<message id="82" name="REQUEST_FIELDS_ONESHOT" access="WRITE_ONLY">
+		<message id="62" name="REQUEST_FIELDS_ONESHOT" access="WRITE_ONLY">
 			<description>Just one time instead of configuring continuous telemetry. Probably superfiluous if Read/Write mechanism of this protocol can stimulate a single register.</description>
 			<field type="messageMask_t" name="oneShotMask">Request a set of messages only one time, not set for cyclic</field>
 		</message>
-		<message id="127" name="BROADCAST" access="WRITE_ONLY">
+		<message id="63" name="BROADCAST" access="WRITE_ONLY">
 			<description>Broadcast a message to all controller boards at once. Used for universal commands like Panic Stop, etc</description>
 			<field type="broadcast_t" name="broadcastCommand" minValue="0" maxValue="255" initValue="0">See broadcast_t description</field>
 		</message>
@@ -263,9 +256,10 @@
 			<roverlink_frame>
 				<src_board_id 	bits="4">Source/Originating device. 0x00 for Basestation, see BOARD_ID enum for others</src_board_id>
 				<dst_board_id 	bits="4">Intended Recipient device. 0x01 for Main Controller, see BOARD_ID enum for others</dst_board_id>
-				<read_write_bit	bits="1">The address byte's MSB is 0 for read stimulus packets, 1 for setpoint write packets</read_write_bit>
-				<message_id 	bits="7">ROVER_STATUS would give 0x01 for this field</message_id>
-				<sequence_cnt 	bits="16">Packet unique number, rolls over at 65535</sequence_cnt>
+				<write_bit		bits="1">The address byte's MSB is 1 for setpoint write packets, 0 for all else</write_bit>
+				<request_bit	bits="1">This bit is set to 1 when requesting the contents of a message or writing, 0 otherwise</request_bit>
+				<message_id 	bits="6">ROVER_STATUS would give 0x01 for this field</message_id>
+				<sequence_cnt 	bits="8">Packet unique number, rolls over at 255</sequence_cnt>
 				<payload_len	bits="8">Payload size</payload_len>
 				<payload />
 			</roverlink_frame>
@@ -284,28 +278,28 @@ Basestation write Drive Setpoints to Main Controller
 	0020   Addrs SrcPr DstPr Lngth chksm 01 88 00 01 04 03
 	0030   e8 00 00 
 
-	01 88 00 00 04 03 e8 00 00	Description
+	01 88 00 04 03 e8 00 00	Description
 	
 	0 							Source is Base Station (0x00)
 	 1 							Destination is Main Controller Board (0x01)
 	   88						0b10001000: Write (MSB=1), 1000 = 0x08 = DRIVE_SETPOINTS Message
-	      00 00					uint8_t 0: 1st Packet sent from Basestation (or is it zeroth?)
-		        04				uint8_t 4: 4 bytes remaining after this byte
-				   03 e8		int16_t 1000: Drive full forward +1000
-				         00 00	int16_t 0: 0 Turn component
+	      00 					uint8_t 0: 1st Packet sent from Basestation (or is it zeroth?)
+		     04				uint8_t 4: 4 bytes remaining after this byte
+				03 e8		int16_t 1000: Drive full forward +1000
+				      00 00	int16_t 0: 0 Turn component
 						 
 	
 	
 	
 Basestation requests Arm Setpoints	
-	02 0A 0001 00
+	02 0A 01 00
 	Src: Basestation Dst: Arm Board
 	   Read ARM_SETPOINTS
 	      2nd Packet sent by Basestation
 		       No Payload
 
 Arm Board responds with the current arm setpoints
-	20 ?A 0000 0E 0000 0000 0000 0000 0000 0000 0000
+	20 ?A 00 0E 0000 0000 0000 0000 0000 0000 0000
 	Src: Arm Board Dst: Basestation
 	   ARM_SETPOINTS Report, should the MSB indicate a READ or a WRITE?
 	   Should be WRITE, as symmetrically, makes sense.
@@ -317,14 +311,14 @@ Arm Board responds with the current arm setpoints
 				   All zeros, initial values for rebooted arm board.
 
 Basestation write new values to the Arm Board				   
-	02 8A 0002 0E 0000 00FA 02BC 00FA 0000 0000 0000
+	02 8A 02 0E 0000 00FA 02BC 00FA 0000 0000 0000
 	Src: Basestation Dst: Arm Board
 	   Message: Write ARM_SETPOINTS
 	      3rd Packet sent by Basestation (0,1,2; 0x02 represends 2, but there have been 3 packets)
-		       14 Bytes in the payload
-				  0->baseAzimuth
-				       250->shoulder
-						    700->elbow
+		     14 Bytes in the payload
+				0->baseAzimuth
+				     250->shoulder
+					   700->elbow
 							     250->wristTilt
 								      0->wristRotate
 									       etc
