@@ -25,10 +25,10 @@
 -->
 <roverlink xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="RoverLink.xsd">
 
-	<version>2</version>
+	<version>3</version>
 	<constants>
-		<constant type="uint8_t" name="WRITE_BIT"	value="0x08">The Message Id is bitwise ORed with this to designate a write</constant>
-		<constant type="uint8_t" name="REQUEST_BIT"	value="0x04">The Message Id is bitwise ORed with this to designate a request</constant>
+		<constant type="uint8_t" name="WRITE_BIT"	value="0x80">The Message Id is bitwise ORed with this to designate a write</constant>
+		<constant type="uint8_t" name="REQUEST_BIT"	value="0x40">The Message Id is bitwise ORed with this to designate a request</constant>
 	</constants>
 	<typedefs>
 		<typedef type="uint8_t"		name="systemState_t"></typedef>
@@ -37,7 +37,7 @@
 	</typedefs>
 	<enums>
 		<enum name="BOARD_ID" target="board_id">
-			<description>List of possible alises. Each board belongs to only one kind of alias/group.</description>
+			<description>List of possible aliases. Each board belongs to only one kind of alias/group.</description>
 				<!-- This lets our boards be UDP port and IP Address agnostic. No reason to fret about IP addresses on the rover or basestation -->
 			<entry value="0" name="BASESTATION">
 				<description>The Primary Basestation</description></entry>
@@ -62,8 +62,8 @@
 		<enum name="GPS_FIX_TYPE" target="fix_type">
 			<description>fix_type in the GPS message</description>
 			<entry value="0" name="NONE"><description>No Fix</description></entry>
-			<entry value="1" name="2D"><description>2D Fix</description></entry>
-			<entry value="2" name="3D"><description>Full Solution</description></entry>
+			<entry value="1" name="FIX_2D"><description>2D Fix</description></entry>
+			<entry value="2" name="FIX_3D"><description>Full Solution</description></entry>
 			<entry value="3" name="OTHER"><description>Other or unknown</description></entry>
 		</enum>
 		<enum name="MESSAGE_MASK" target="messageMask_t ##name"> <!-- Fantastically dangerious to use the "##" operator, is a precompiler macro,
@@ -82,9 +82,9 @@
 			<entry value="0x0400" name="ARM_SETPOINTS"></entry>
 			<entry value="0x0800" name="ISHAAMA"></entry>
 			<entry value="0x1000" name="LIFERAY"></entry>
-			<entry value="0x2000" name="CUSTOM_DEBUG_3"></entry>
+			<entry value="0x2000" name="CUSTOM_DEBUG_1"></entry>
 			<entry value="0x4000" name="CUSTOM_DEBUG_2"></entry>
-			<entry value="0x8000" name="CUSTOM_DEBUG_1"></entry>
+			<entry value="0x8000" name="CUSTOM_DEBUG_3"></entry>
 		</enum>
 		<enum name="BROADCAST_COMMAND" target="broadcastCommand">
 			<description>Broadcast Message</description>
@@ -234,7 +234,7 @@
 			<field type="messageMask_t" name="telemetryMask_1HZ"	initValue="0b0011111110110001">Intermediate Loop</field>
 			<field type="messageMask_t" name="telemetryMask_10SEC"	initValue="0b0100000000000000">Slow Loop</field>
 		</message>
-		<message id="62" name="REQUEST_FIELDS_ONESHOT" access="WRITE_ONLY">
+		<message id="62" name="REQ_FIELDS_ONCE" access="WRITE_ONLY">
 			<description>Just one time instead of configuring continuous telemetry. Probably superfiluous if Read/Write mechanism of this protocol can stimulate a single register.</description>
 			<field type="messageMask_t" name="oneShotMask">Request a set of messages only one time, not set for cyclic</field>
 		</message>
@@ -261,7 +261,7 @@
 				<message_id 	bits="6">ROVER_STATUS would give 0x01 for this field</message_id>
 				<sequence_cnt 	bits="8">Packet unique number, rolls over at 255</sequence_cnt>
 				<payload_len	bits="8">Payload size</payload_len>
-				<payload />
+				<payload bits=8*payload_len>This is the message struct: All fields sent in sequence, MSB first (Big-endian)</payload>
 			</roverlink_frame>
 		</udp_data>
 		<ethernet_padding/>
@@ -273,105 +273,130 @@
 <!-- Example Byte Runs
 
 Basestation write Drive Setpoints to Main Controller
-	0000   |Src MAC Address| |Dst MAC Address| Type  VL DS
-	0010   Lngth Ident Fg Of TT Pr chksm SrcIpAddres DstIp
-	0020   Addrs SrcPr DstPr Lngth chksm 01 88 00 01 04 03
-	0030   e8 00 00 
+    0000   |Src MAC Address| |Dst MAC Address| Type  VL DS
+    0010   Lngth Ident Fg Of TT Pr chksm SrcIpAddres DstIp
+    0020   Addrs SrcPr DstPr Lngth chksm 01 c8 00 04 03 e8
+    0030   00 00 
 
-	01 88 00 04 03 e8 00 00	Description
-	
-	0 							Source is Base Station (0x00)
-	 1 							Destination is Main Controller Board (0x01)
-	   88						0b10001000: Write (MSB=1), 1000 = 0x08 = DRIVE_SETPOINTS Message
-	      00 					uint8_t 0: 1st Packet sent from Basestation (or is it zeroth?)
-		     04				uint8_t 4: 4 bytes remaining after this byte
-				03 e8		int16_t 1000: Drive full forward +1000
-				      00 00	int16_t 0: 0 Turn component
-						 
-	
-	
-	
+    01 C8 00 04 03 E8 00 00    Description
+    
+    0                          Source is Base Station (0x00)
+     1                         Destination is Main Controller Board (0x01)
+       C8                      0b11001000: Write (MSB=1), 1000 = 0x08 = DRIVE_SETPOINTS Message
+          00                   uint8_t 0: 1st Packet sent from Basestation (or is it called zeroth?)
+             04                uint8_t 4: 4 bytes remaining after this byte
+                03 E8          int16_t 1000: Drive full forward +1000
+                      00 00    int16_t 0: 0 Turn component
+
+
+
 Basestation requests Arm Setpoints	
-	02 0A 01 00
-	Src: Basestation Dst: Arm Board
-	   Read ARM_SETPOINTS
-	      2nd Packet sent by Basestation
-		       No Payload
+    02 4A 01 00
+    Src: Basestation, Dst: Arm Board
+       Read ARM_SETPOINTS
+          2nd Packet sent by Basestation
+             No Payload, this should be the last byte of the packet
 
 Arm Board responds with the current arm setpoints
-	20 ?A 00 0E 0000 0000 0000 0000 0000 0000 0000
-	Src: Arm Board Dst: Basestation
-	   ARM_SETPOINTS Report, should the MSB indicate a READ or a WRITE?
-	   Should be WRITE, as symmetrically, makes sense.
-	   However, should be READ, to honor Master/Slave nature of Basestation-Rover topology.
-	   Could get a infinite loop if this packet is interpreted accidently by this or another board.
-	   Therefore, a response to a READ should also be a READ. 0x0A it should be.
-	      1st Packet sent by the Arm board (Sequence starts at 0)
-		        14 Bytes in payload
-				   All zeros, initial values for rebooted arm board.
+    20 0A 00 0E 0000 0000 0000 0000 0000 0000 0000
+    Src: Arm Board, Dst: Basestation
+       ARM_SETPOINTS Report, bits 7 and 6 clears, representing this is a response packet.
+          1st Packet sent by the Arm board (Sequence starts at 0)
+             14 Bytes in payload
+                All zeros, initial values for rebooted arm board.
 
-Basestation write new values to the Arm Board				   
-	02 8A 02 0E 0000 00FA 02BC 00FA 0000 0000 0000
-	Src: Basestation Dst: Arm Board
-	   Message: Write ARM_SETPOINTS
-	      3rd Packet sent by Basestation (0,1,2; 0x02 represends 2, but there have been 3 packets)
-		     14 Bytes in the payload
-				0->baseAzimuth
-				     250->shoulder
-					   700->elbow
-							     250->wristTilt
-								      0->wristRotate
-									       etc
+Basestation write new values to the Arm Board
+    02 CA 02 0E 0000 00FA 02BC 00FA 0000 0000 0000
+    Src: Basestation, Dst: Arm Board
+       Message: Write ARM_SETPOINTS
+          3rd Packet sent by Basestation (0,1,2; 0x02 represends 2, but there have been 3 packets)
+             14 Bytes in the payload
+                0->baseAzimuth
+                     250->shoulder
+                          700->elbow
+                               250->wristTilt
+                                    0->wristRotate
+                                         etc
 
-Basestation requests Arm Setpoints											
-	02 0A 0003 00
-	Src: Basestation Dst: Arm Board
-	   Read ARM_SETPOINTS
-	      4th Packet sent by Basestation
-		       No Payload
+Basestation requests Arm Setpoints
+    02 4A 03 00
+    Src: Basestation, Dst: Arm Board
+       Request ARM_SETPOINTS, bit 6 is set indicating request
+          4th Packet sent by Basestation
+             No Payload; even if there are more bytes after this, they should be ignored
 
-Arm Board responds with the current arm setpoints				
-	20 0A 0001 0E 0000 00FA 02BC 00FA 0000 0000 0000
-	Src: Arm Board Dst: Basestation
-	   ARM_SETPOINTS Report, READ Bit for MSB by reasoning presented above.
-	      Seq count is 0x0001, this is the 2nd packet originating from the Arm Board
-		       14 Bytes in payload
-				  Bytes match the write made earlier.
-	
-Having to ask using the READ message is getting complex, this is why we have the REQUEST_FIELDS_ONESHOT message
-	02 E6 0004 02 0500
-	Basestation to Arm Board
-	   Message #102 with WRITE bit on MSB.
-	      5th Message transmitted by Basestation
-		       2-byte payload
-			      Bitmask with 1's on the 8th and 10th digits, corresponding to messages #8 (Drive) and #10 (Arm).
-	
-The Main and Arm Controller boards respond to the One-Shot read request. This is getting sticky: That was a WRITE bit, but it stimulates a READ behavior(s)... ouch
+Arm Board responds with the current arm setpoints
+    20 0A 01 0E 0000 00FA 02BC 00FA 0000 0000 0000
+    Src: Arm Board, Dst: Basestation
+       ARM_SETPOINTS Report, bits 7 and 6 cleared
+          Seq count is 0x01, this is the 2nd packet originating from the Arm Board
+             14 Bytes in payload
+                Bytes match the write made earlier.
+
+Basestation asks for a set of messages to be transmitted back once
+    02 FD 04 02 0500
+    Basestation to Arm Board
+       Message #253 with WRITE and REQUEST bits active (signifing a write)
+          5th Message transmitted by Basestation
+             2-byte payload
+                Bitmask with 1's on the 8th and 10th digits, corresponding to messages #8 (Drive) and #10 (Arm).
 
 -->
 
+<!-- Comments on WRITE and REQUEST bit selection
+This protocol is somewhat tricky, or quirky, in that it tries to draw on several common traditions.
+In many network protocols, the all-ones case (like 0xFF, 0xFFFF) is the broadcast address.
+The broadcast address is meant to be listened to by all devices on the network.
+I borrow from the I2C and SPI world with the Read/Write bit idea: Its state indicates read or write.
+To try to have both traditions, the WRITE pattern is 0x11xxxxxx, so that BROADCAST can be 0xFF/255. 
+This also made numbers nice for the writeable structs, like 200 for Drive, 201 for video, etc.
+This protocol is lousy in that it has a special case of 0x11xxxxxx for write, which overlaps somewhat.
+It would be better to have the WRITE pattern to be 0x10xxxxxx, and REQUEST stays at 0x01xxxxxx.
+This is a one-hot encoding of sorts, and would allow for compound operations, 0x11xxxxxx would mean: 
+Write first, then immediately respond with the struct contents to assure the packet was processed.
+However, I liked the arrangement as it currently stands in terms of nice numbers, and: The above 
+behavior is totally doable. Put another way: The pattern 0x11xxxxxx can trigger a immediate response to 
+verify to the basestation that the packet was received and processed.
+Keeping the current convention also reads somewhat like an plain-english order: Write-request, or 
+read-request; or read-reply, with no such thing as a write-reply?
 
+-->
+
+<!-- Comments on Sequence Counter Purpose and Usage
+The purpose of the sequence counter is to give each packet a "name" that idenfies it.
+It is not the Message Id, which states what kind of packet, we want a unique Id for each packet sent.
+A one byte sequence counter yields 255 possible names for each packet, and provided that a given control board only sends perhaps
+5 message types at 10 Hz and another 5 at 1 Hz, that totals to 55 packets per second, allowing 4 seconds between the 
+sequence counter rolling over to zero on average.
+By numbering each packet being sent sequensially, the receiving device downstream can know if any packets are missing. This allows 
+us to generate a link percentage metric, say, we are receiving 91% of the rover packets, so the link is starting to decay, etc.
+The sequence counter also allows the downstream receiving device to know the age of a packet, and whether to throw a late message 
+away which has been beaten by a newer packet.
+
+
+
+-->
 
 <!-- Overview
-                a: 0=Read, 1=Write
-0		0x00	00000000	Board Health / Heartbeat
-1		0x01	00000001	Rover Status
-2		0x02	00000010	Arm Status
-3		0x03	00000011	<Reserved>
-4		0x04	00000100	GPS Position
-5		0x05	00000101	IMU Samples
-6		0x06	00000110	<Reserved>
-7		0x07	00000111	Dragonlink Samples
-8		0x08	a0001000	Rover Drive Setpoints
-9		0x09	a0001001	Camera & Gimbal Setpoints
-10		0x0A	a0001010	Arm Setpoints
-11		0x0B	a0001011	ISHAAMA
-12		0x0C	a0001100	LIFERAY
-13		0x0D	a0001101	Custom Debug 3
-14		0x0E	a0001110	Custom Debug 2
-15		0x0F	a0001111	Custom Debug 1
-100		0x64	a1100100	Ping
-101		0x65	a1100101	Telemetry Config
-102		0x66	11100110	Request Single (One Shot)
-127		0x7F	11111111	Broadcast
+                ab: 11=Write, 01=Request, 00=Response, 10=Invalid
+0		0x00	ab000000	Board Health / Heartbeat
+1		0x01	ab000001	Rover Status
+2		0x02	ab000010	Arm Status
+3		0x03	ab000011	<Reserved>
+4		0x04	ab000100	GPS Position
+5		0x05	ab000101	IMU Samples
+6		0x06	ab000110	<Reserved>
+7		0x07	ab000111	Dragonlink Samples
+8		0x08	ab001000	Rover Drive Setpoints
+9		0x09	ab001001	Camera & Gimbal Setpoints
+10		0x0A	ab001010	Arm Setpoints
+11		0x0B	ab001011	ISHAAMA
+12		0x0C	ab001100	LIFERAY
+13		0x0D	ab001101	Custom Debug 3
+14		0x0E	ab001110	Custom Debug 2
+15		0x0F	ab001111	Custom Debug 1
+60		0x3C	ab100100	Ping
+61		0x3D	ab100101	Telemetry Config
+62		0x3E	ab100110	Request Single (One Shot)
+63		0x3F	ab111111	Broadcast
 -->

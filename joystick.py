@@ -3,13 +3,13 @@ from pygame.locals import *
 import socket
 
 # UDP_IP = "192.168.1.143"
-# UDP_IP = "127.0.0.1"
+UDP_IP = "127.0.0.1"
 # UDP_IP = "192.168.7.2"
 # UDP_IP = '127.0.0.255' # Broadcast Loopback
 # UDP_IP = '255.255.255.255' # Broadcast Sun Adapter
 # UDP_IP = '192.168.0.255' # Broadcast Local Network?
 # UDP_IP = '71.195.237.116' # Broadcast
-UDP_IP = '192.168.10.131' # Broadcast
+# UDP_IP = '192.168.10.131' # Broadcast
 # UDP_PORT = 80
 UDP_PORT = 27015
 MESSAGE = "Rover Test Frame"
@@ -17,8 +17,8 @@ MESSAGE = "Rover Test Frame"
 FPS = 20
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1) # Broadcast
-sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1) # Broadcast
+# sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1) # Broadcast
+# sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1) # Broadcast
 # sock.bind((UDP_IP, UDP_PORT)) # Broadcast
 
 print "UDP target IP:", UDP_IP

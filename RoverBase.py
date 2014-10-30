@@ -5,24 +5,25 @@ import socket
 from array import *
 
 # UDP_IP = "192.168.1.143"
-UDP_IP = "127.0.0.1"
+# UDP_IP = "127.0.0.1"
 # UDP_IP = "192.168.7.2"
 # UDP_IP = '127.0.0.255' # Broadcast Loopback
 # UDP_IP = '255.255.255.255' # Broadcast Sun Adapter
 # UDP_IP = '192.168.0.255' # Broadcast Local Network?
 # UDP_IP = '71.195.237.116' # Broadcast
-# UDP_IP = '192.168.10.131' # Broadcast
+UDP_IP = '192.168.10.130' # Broadcast
 # UDP_IP = '192.168.1.149' # Broadcast
 # UDP_IP = '192.168.1.112' # Broadcast
 # UDP_PORT = 80
 UDP_PORT = 27015
 MESSAGE = "Rover Test Frame"
 
+
 FPS = 20
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-#sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1) # Broadcast
-#sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1) # Broadcast
+# sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1) # Broadcast
+# sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1) # Broadcast
 # sock.bind((UDP_IP, UDP_PORT)) # Broadcast
 
 print "UDP target IP:", UDP_IP
@@ -139,68 +140,22 @@ while done==False:
 	
 
 	# Get count of joysticks
-	joystick_count = pygame.joystick.get_count()
-	textprintScr.printScr(screen, "Number of joysticks: {}".format(joystick_count) )
-	textprintScr.indent()
+	# joystick_count = pygame.joystick.get_count()
+	# textprintScr.printScr(screen, "Number of joysticks: {}".format(joystick_count) )
+	# textprintScr.indent()
 	
 	# For each joystick:
-	for i in range(joystick_count):
-		joystick = pygame.joystick.Joystick(i)
-		joystick.init()
-	
-		textprintScr.printScr(screen, "Joystick {}".format(i) )
-		textprintScr.indent()
-	
-		# Get the name from the OS for the controller/joystick
-		name = joystick.get_name()
-		textprintScr.printScr(screen, "Joystick name: {}".format(name) )
-		
-		# Usually axis run in pairs, up/down for one, and left/right for
-		# the other.
-		axes = joystick.get_numaxes()
-		textprintScr.printScr(screen, "Number of axes: {}".format(axes) )
-		textprintScr.indent()
-		
-		for i in range( axes ):
-			axis = joystick.get_axis( i )
-			textprintScr.printScr(screen, "Axis {} value: {:>6.3f}".format(i, axis) )
-		textprintScr.unindent()
-			
-		buttons = joystick.get_numbuttons()
-		textprintScr.printScr(screen, "Number of buttons: {}".format(buttons) )
-		textprintScr.indent()
-
-		for i in range( buttons ):
-			button = joystick.get_button( i )
-			textprintScr.printScr(screen, "Button {:>2} value: {}".format(i,button) )
-		textprintScr.unindent()
-			
-		# Hat switch. All or nothing for direction, not like joysticks.
-		# Value comes back in an array.
-		hats = joystick.get_numhats()
-		textprintScr.printScr(screen, "Number of hats: {}".format(hats) )
-		textprintScr.indent()
-
-		for i in range( hats ):
-			hat = joystick.get_hat( i )
-			textprintScr.printScr(screen, "Hat {} value: {}".format(i, str(hat)) )
-		textprintScr.unindent()
-		
-		textprintScr.unindent()		
-		
-		payload = repr(joystick.get_axis(0))
-		sock.sendto(payload, (UDP_IP, UDP_PORT))
 	
 	# --- Over-ride the Mouse/Keyboard setpoints if joystick is present
 	if(pygame.joystick.get_count()==1):
-		joystick = pygame.joystick.Joystick(i)
+		joystick = pygame.joystick.Joystick(0)
 		joystick.init()
 		if(joystick.get_numaxes() >=2 ):
 			drive[0] = int(joystick.get_axis(0)*1000)
-			drive[1] = int(joystick.get_axis(1)*1000)
+			drive[1] = int(joystick.get_axis(1)*-1000)
 		if(joystick.get_numaxes() >=4 ):
-			gimbal[0] = int(joystick.get_axis(2)*1000)
-			gimbal[1] = int(joystick.get_axis(3)*1000)
+			gimbal[0] = int(joystick.get_axis(4)*1000)
+			gimbal[1] = int(joystick.get_axis(3)*-1000)
 	
 	
 	# --- Constrain all values to +/- 1000
@@ -258,3 +213,58 @@ while done==False:
 	clock.tick(FPS)
 
 pygame.quit ()
+
+
+
+'''
+
+# For each joystick:
+	for i in range(joystick_count):
+		joystick = pygame.joystick.Joystick(i)
+		joystick.init()
+	
+		textprintScr.printScr(screen, "Joystick {}".format(i) )
+		textprintScr.indent()
+	
+		# Get the name from the OS for the controller/joystick
+		name = joystick.get_name()
+		textprintScr.printScr(screen, "Joystick name: {}".format(name) )
+		
+		# Usually axis run in pairs, up/down for one, and left/right for
+		# the other.
+		axes = joystick.get_numaxes()
+		textprintScr.printScr(screen, "Number of axes: {}".format(axes) )
+		textprintScr.indent()
+		
+		for i in range( axes ):
+			axis = joystick.get_axis( i )
+			textprintScr.printScr(screen, "Axis {} value: {:>6.3f}".format(i, axis) )
+		textprintScr.unindent()
+			
+		buttons = joystick.get_numbuttons()
+		textprintScr.printScr(screen, "Number of buttons: {}".format(buttons) )
+		textprintScr.indent()
+
+		for i in range( buttons ):
+			button = joystick.get_button( i )
+			textprintScr.printScr(screen, "Button {:>2} value: {}".format(i,button) )
+		textprintScr.unindent()
+			
+		# Hat switch. All or nothing for direction, not like joysticks.
+		# Value comes back in an array.
+		hats = joystick.get_numhats()
+		textprintScr.printScr(screen, "Number of hats: {}".format(hats) )
+		textprintScr.indent()
+
+		for i in range( hats ):
+			hat = joystick.get_hat( i )
+			textprintScr.printScr(screen, "Hat {} value: {}".format(i, str(hat)) )
+		textprintScr.unindent()
+		
+		textprintScr.unindent()		
+		
+		payload = repr(joystick.get_axis(0))
+		sock.sendto(payload, (UDP_IP, UDP_PORT))
+	
+
+'''
