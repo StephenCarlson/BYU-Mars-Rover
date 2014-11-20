@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CyXmlSerializer>
+<!--This file is machine generated and read. It is not intended to be edited by hand.-->
+<!--Due to this, there is no schema for this file.-->
+<CyGuid_843a90a4-0c4b-4e44-991d-05e7fb117a21 type_name="CyDesigner.Common.ProjMgmt.Model.CyPrjMgmtWrkspcCustomData" version="4">
+<CyGuid_fdba8dfd-b15b-4469-9bbb-9e40c3e70997 type_name="CyDesigner.Common.Base.CyCustomData" version="2">
+<userData>
+<dataGuid v="1b906a0f-a7b6-4e4d-a428-82f98b53cb35">
+<CyGuid_1b906a0f-a7b6-4e4d-a428-82f98b53cb35 type_name="CyDesigner.Common.ProjMgmt.GUI.CyExplorerWindow+CyExplorerWindowState" version="3" SelectedTab="Source">
+<TreeKeys>
+<v>Source</v>
+<v>Components</v>
+<v>Output</v>
+</TreeKeys>
+<TreeStates>
+<CyGuid_2a325b3b-c96a-4e9f-b7a0-2c44ecb5f237 type_name="CyDesigner.Common.Base.Controls.CyTreeViewState" version="1" SelectedNodeId="PSoC4_printf\PSoC4_printf">
+<ExpandedNodeIds>
+<v>PSoC4_printf</v>
+<v>PSoC4_printf\PSoC4_printf</v>
+<v>PSoC4_printf\PSoC4_printf\TopDesign.cysch</v>
+<v>PSoC4_printf\PSoC4_printf\PSoC4_printf.cydwr</v>
+<v>PSoC4_printf\PSoC4_printf\Header Files</v>
+<v>PSoC4_printf\PSoC4_printf\Header Files\device.h</v>
+<v>PSoC4_printf\PSoC4_printf\Source Files</v>
+<v>PSoC4_printf\PSoC4_printf\Source Files\main.c</v>
+<v>PSoC4_printf\PSoC4_printf\Generated_Source\PSoC4</v>
+<v>PSoC4_printf\PSoC4_printf\Generated_Source\PSoC4\cy_boot</v>
+<v>PSoC4_printf\PSoC4_printf\Generated_Source\PSoC4\cy_boot\cm0gcc.ld</v>
+<v>PSoC4_printf\PSoC4_printf\Generated_Source\PSoC4\cy_boot\Cm0RealView.scat</v>
+<v>PSoC4_printf\PSoC4_printf\Generated_Source\PSoC4\cy_boot\Cm0Start.c</v>
+<v>PSoC4_printf\PSoC4_printf\Generated_Source\PSoC4\cy_boot\core_cm0.c</v>
+<v>PSoC4_printf\PSoC4_printf\Generated_Source\PSoC4\cy_boot\core_cm0.h</v>
+<v>PSoC4_printf\PSoC4_printf\Generated_Source\PSoC4\cy_boot\core_cm0_psoc4.h</v>
+<v>PSoC4_printf\PSoC4_printf\Generated_Source\PSoC4\cy_boot\CyBootAsmGnu.s</v>
+<v>PSoC4_printf\PSoC4_printf\Generated_Source\PSoC4\cy_boot\CyBootAsmRv.s</v>
+<v>PSoC4_printf\PSoC4_printf\Generated_Source\PSoC4\cy_boot\CyFlash.c</v>
+<v>PSoC4_printf\PSoC4_printf\Generated_Source\PSoC4\cy_boot\CyFlash.h</v>
+<v>PSoC4_printf\PSoC4_printf\Generated_Source\PSoC4\cy_boot\CyLib.c</v>
+<v>PSoC4_printf\PSoC4_printf\Generated_Source\PSoC4\cy_boot\CyLib.h</v>
+<v>PSoC4_printf\PSoC4_printf\Generated_Source\PSoC4\cy_boot\cypins.h</v>
+<v>PSoC4_printf\PSoC4_printf\Generated_Source\PSoC4\cy_boot\cyPm.c</v>
+<v>PSoC4_printf\PSoC4_printf\Generated_Source\PSoC4\cy_boot\cyPm.h</v>
+<v>PSoC4_printf\PSoC4_printf\Generated_Source\PSoC4\cy_boot\cytypes.h</v>
+<v>PSoC4_printf\PSoC4_printf\Generated_Source\PSoC4\cy_boot\cyutils.c</v>
+<v>PSoC4_printf\PSoC4_printf\Generated_Source\PSoC4\tinyprintf</v>
+<v>PSoC4_printf\PSoC4_printf\Generated_Source\PSoC4\tinyprintf\tinyprintf_printf.c</v>
+<v>PSoC4_printf\PSoC4_printf\Generated_Source\PSoC4\tinyprintf\tinyprintf_printf.h</v>
+<v>PSoC4_printf\PSoC4_printf\Generated_Source\PSoC4\UART</v>
+<v>PSoC4_printf\PSoC4_printf\Generated_Source\PSoC4\UART\UART.c</v>
+<v>PSoC4_printf\PSoC4_printf\Generated_Source\PSoC4\UART\UART.h</v>
+<v>PSoC4_printf\PSoC4_printf\Generated_Source\PSoC4\UART\UART_BOOT.c</v>
+<v>PSoC4_printf\PSoC4_printf\Generated_Source\PSoC4\UART\UART_PINS.h</v>
+<v>PSoC4_printf\PSoC4_printf\Generated_Source\PSoC4\UART\UART_PM.c</v>
+<v>PSoC4_printf\PSoC4_printf\Generated_Source\PSoC4\UART\UART_PVT.h</v>
+<v>PSoC4_printf\PSoC4_printf\Generated_Source\PSoC4\UART\UART_SPI_UART.c</v>
+<v>PSoC4_printf\PSoC4_printf\Generated_Source\PSoC4\UART\UART_SPI_UART.h</v>
+<v>PSoC4_printf\PSoC4_printf\Generated_Source\PSoC4\UART\UART_SPI_UART_INT.c</v>
+<v>PSoC4_printf\PSoC4_printf\Generated_Source\PSoC4\UART\UART_SPI_UART_PVT.h</v>
+<v>PSoC4_printf\PSoC4_printf\Generated_Source\PSoC4\UART\UART_UART.c</v>
+<v>PSoC4_printf\PSoC4_printf\Generated_Source\PSoC4\UART\UART_UART_BOOT.c</v>
+<v>PSoC4_printf\PSoC4_printf\Generated_Source\PSoC4\UART_rx</v>
+<v>PSoC4_printf\PSoC4_printf\Generated_Source\PSoC4\UART_rx\UART_rx.c</v>
+<v>PSoC4_printf\PSoC4_printf\Generated_Source\PSoC4\UART_rx\UART_rx.h</v>
+<v>PSoC4_printf\PSoC4_printf\Generated_Source\PSoC4\UART_rx\UART_rx_aliases.h</v>
+<v>PSoC4_printf\PSoC4_printf\Generated_Source\PSoC4\UART_SCBCLK</v>
+<v>PSoC4_printf\PSoC4_printf\Generated_Source\PSoC4\UART_SCBCLK\UART_SCBCLK.c</v>
+<v>PSoC4_printf\PSoC4_printf\Generated_Source\PSoC4\UART_SCBCLK\UART_SCBCLK.h</v>
+<v>PSoC4_printf\PSoC4_printf\Generated_Source\PSoC4\UART_tx</v>
+<v>PSoC4_printf\PSoC4_printf\Generated_Source\PSoC4\UART_tx\UART_tx.c</v>
+<v>PSoC4_printf\PSoC4_printf\Generated_Source\PSoC4\UART_tx\UART_tx.h</v>
+<v>PSoC4_printf\PSoC4_printf\Generated_Source\PSoC4\UART_tx\UART_tx_aliases.h</v>
+<v>PSoC4_printf\PSoC4_printf\Generated_Source\PSoC4\cydevice_trm.h</v>
+<v>PSoC4_printf\PSoC4_printf\Generated_Source\PSoC4\cydevicegnu_trm.inc</v>
+<v>PSoC4_printf\PSoC4_printf\Generated_Source\PSoC4\cydevicerv_trm.inc</v>
+<v>PSoC4_printf\PSoC4_printf\Generated_Source\PSoC4\cyfitter.h</v>
+<v>PSoC4_printf\PSoC4_printf\Generated_Source\PSoC4\cyfitter_cfg.c</v>
+<v>PSoC4_printf\PSoC4_printf\Generated_Source\PSoC4\cyfitter_cfg.h</v>
+<v>PSoC4_printf\PSoC4_printf\Generated_Source\PSoC4\cyfittergnu.inc</v>
+<v>PSoC4_printf\PSoC4_printf\Generated_Source\PSoC4\cyfitterrv.inc</v>
+<v>PSoC4_printf\PSoC4_printf\Generated_Source\PSoC4\project.h</v>
+</ExpandedNodeIds>
+<VisibleNodeIds>
+<v>PSoC4_printf</v>
+<v>PSoC4_printf\PSoC4_printf</v>
+<v>PSoC4_printf\PSoC4_printf\TopDesign.cysch</v>
+<v>PSoC4_printf\PSoC4_printf\PSoC4_printf.cydwr</v>
+<v>PSoC4_printf\PSoC4_printf\Header Files</v>
+<v>PSoC4_printf\PSoC4_printf\Header Files\device.h</v>
+<v>PSoC4_printf\PSoC4_printf\Source Files</v>
+<v>PSoC4_printf\PSoC4_printf\Source Files\main.c</v>
+<v>PSoC4_printf\PSoC4_printf\Generated_Source</v>
+</VisibleNodeIds>
+</CyGuid_2a325b3b-c96a-4e9f-b7a0-2c44ecb5f237>
+<CyGuid_2a325b3b-c96a-4e9f-b7a0-2c44ecb5f237 type_name="CyDesigner.Common.Base.Controls.CyTreeViewState" version="1" SelectedNodeId="">
+<ExpandedNodeIds>
+<v>PSoC4_printf</v>
+<v>PSoC4_printf\PSoC4_printf</v>
+<v>PSoC4_printf\PSoC4_printf\tinyprintf</v>
+<v>PSoC4_printf\PSoC4_printf\tinyprintf\API</v>
+<v>PSoC4_printf\PSoC4_printf\tinyprintf\API\printf.c</v>
+<v>PSoC4_printf\PSoC4_printf\tinyprintf\API\printf.h</v>
+<v>PSoC4_printf\PSoC4_printf\tinyprintf\tinyprintf.cysym</v>
+<v>PSoC4_printf\PSoC4_printf\TopDesign</v>
+<v>PSoC4_printf\PSoC4_printf\TopDesign\TopDesign.cysch</v>
+</ExpandedNodeIds>
+<VisibleNodeIds>
+<v>PSoC4_printf</v>
+<v>PSoC4_printf\PSoC4_printf</v>
+<v>PSoC4_printf\PSoC4_printf\tinyprintf</v>
+<v>PSoC4_printf\PSoC4_printf\tinyprintf\API</v>
+<v>PSoC4_printf\PSoC4_printf\tinyprintf\API\printf.c</v>
+<v>PSoC4_printf\PSoC4_printf\tinyprintf\API\printf.h</v>
+<v>PSoC4_printf\PSoC4_printf\tinyprintf\tinyprintf.cysym</v>
+<v>PSoC4_printf\PSoC4_printf\TopDesign</v>
+<v>PSoC4_printf\PSoC4_printf\TopDesign\TopDesign.cysch</v>
+</VisibleNodeIds>
+</CyGuid_2a325b3b-c96a-4e9f-b7a0-2c44ecb5f237>
+<CyGuid_2a325b3b-c96a-4e9f-b7a0-2c44ecb5f237 type_name="CyDesigner.Common.Base.Controls.CyTreeViewState" version="1" SelectedNodeId="">
+<ExpandedNodeIds>
+<v>PSoC4_printf</v>
+<v>PSoC4_printf\PSoC4_printf</v>
+<v>PSoC4_printf\PSoC4_printf\CortexM0</v>
+<v>PSoC4_printf\PSoC4_printf\CortexM0\ARM_GCC_473</v>
+<v>PSoC4_printf\PSoC4_printf\CortexM0\ARM_GCC_473\Debug</v>
+<v>PSoC4_printf\PSoC4_printf\CortexM0\ARM_GCC_473\Debug\PSoC4_printf.elf</v>
+<v>PSoC4_printf\PSoC4_printf\CortexM0\ARM_GCC_473\Debug\PSoC4_printf.hex</v>
+<v>PSoC4_printf\PSoC4_printf\CortexM0\ARM_GCC_473\Debug\PSoC4_printf.map</v>
+<v>PSoC4_printf\PSoC4_printf\PSoC4_printf.rpt</v>
+<v>PSoC4_printf\PSoC4_printf\PSoC4_printf_timing.html</v>
+</ExpandedNodeIds>
+<VisibleNodeIds>
+<v>PSoC4_printf</v>
+<v>PSoC4_printf\PSoC4_printf</v>
+<v>PSoC4_printf\PSoC4_printf\CortexM0</v>
+<v>PSoC4_printf\PSoC4_printf\CortexM0\ARM_GCC_473</v>
+<v>PSoC4_printf\PSoC4_printf\CortexM0\ARM_GCC_473\Debug</v>
+<v>PSoC4_printf\PSoC4_printf\CortexM0\ARM_GCC_473\Debug\PSoC4_printf.elf</v>
+<v>PSoC4_printf\PSoC4_printf\CortexM0\ARM_GCC_473\Debug\PSoC4_printf.hex</v>
+<v>PSoC4_printf\PSoC4_printf\CortexM0\ARM_GCC_473\Debug\PSoC4_printf.map</v>
+<v>PSoC4_printf\PSoC4_printf\PSoC4_printf.rpt</v>
+<v>PSoC4_printf\PSoC4_printf\PSoC4_printf_timing.html</v>
+</VisibleNodeIds>
+</CyGuid_2a325b3b-c96a-4e9f-b7a0-2c44ecb5f237>
+</TreeStates>
+<TreeKeysV2>
+<v>Datasheet</v>
+</TreeKeysV2>
+<TreeStatesV2>
+<CyGuid_2a325b3b-c96a-4e9f-b7a0-2c44ecb5f237 type_name="CyDesigner.Common.Base.Controls.CyTreeViewState" version="1" SelectedNodeId="">
+<ExpandedNodeIds>
+<v>PSoC4_printf</v>
+<v>PSoC4_printf\PSoC4_printf</v>
+<v>PSoC4_printf\PSoC4_printf\PSoC 4 Architecture TRM</v>
+<v>PSoC4_printf\PSoC4_printf\PSoC 4200 Family Datasheet</v>
+<v>PSoC4_printf\PSoC4_printf\System Reference Guide v3_40</v>
+<v>PSoC4_printf\PSoC4_printf\SCB_P4_v1_0</v>
+</ExpandedNodeIds>
+<VisibleNodeIds>
+<v>PSoC4_printf</v>
+<v>PSoC4_printf\PSoC4_printf</v>
+<v>PSoC4_printf\PSoC4_printf\PSoC 4 Architecture TRM</v>
+<v>PSoC4_printf\PSoC4_printf\PSoC 4200 Family Datasheet</v>
+<v>PSoC4_printf\PSoC4_printf\System Reference Guide v3_40</v>
+<v>PSoC4_printf\PSoC4_printf\SCB_P4_v1_0</v>
+</VisibleNodeIds>
+</CyGuid_2a325b3b-c96a-4e9f-b7a0-2c44ecb5f237>
+</TreeStatesV2>
+</CyGuid_1b906a0f-a7b6-4e4d-a428-82f98b53cb35>
+</dataGuid>
+</userData>
+</CyGuid_fdba8dfd-b15b-4469-9bbb-9e40c3e70997>
+<Unloaded />
+<OpenDocs>
+<name v=".\PSoC4_printf.cydsn\TopDesign\TopDesign.cysch" />
+<name v=".\PSoC4_printf.cydsn\main.c" />
+<name v=".\PSoC4_printf.cydsn\device.h" />
+</OpenDocs>
+<config v="" />
+<AutoUpdate v="true" />
+</CyGuid_843a90a4-0c4b-4e44-991d-05e7fb117a21>
+</CyXmlSerializer>

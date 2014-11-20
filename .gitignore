@@ -5,8 +5,8 @@
 *.hex
 *.elf
 codegentemp/
+CortexM0/
 Generated_Source/
-Debug/
 *.zip
 
 
