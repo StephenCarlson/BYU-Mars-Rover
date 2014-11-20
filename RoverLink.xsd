@@ -11,7 +11,9 @@
 <xs:attribute name="name"> <!-- enum,entry,message,field -->
 	<xs:simpleType>
 		<xs:restriction base="xs:string">
-			<xs:pattern value="[a-zA-z0-9_]{1,30}"/>
+			<xs:pattern value="[a-zA-z0-9_]{1,30}(\[([0-9])+\])?"/>
+			<!-- I gave up on trying to imitate the mavlink generator, it can do uint8_t[8],
+					I will have to stick with payload[8]. Thus, allows [] on names. -->
 		</xs:restriction>
 	</xs:simpleType>
 </xs:attribute>

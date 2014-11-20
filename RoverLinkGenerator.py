@@ -47,14 +47,21 @@ output = '''#ifndef ROVERLINK_H
 
 output += '\n// Build Timestemp: '+str(datetime.datetime.utcnow().isoformat())
 
-
+output += '\n\n#include <stdint.h>'
 output += "\n\n// -- Constants\n"
 for entry in root.findall("./constants/constant"):
-	output += 'constant '+entry.get("type")+' '+entry.get("name")+' = '+entry.get("value")+';\n'
+	output += 'const '+entry.get("type")+' '+entry.get("name")+' = '+entry.get("value")+';\n'
 
 output += "\n\n// -- Typedefs\n"
 for entry in root.findall("./typedefs/typedef"):
-	output += 'typedef '+entry.get("type")+' '+entry.get("name")+';\n'
+	output += 'typedef '
+	#if (entry.get("type").find("[")) != -1:
+	# <STEVE> Fix this before next time!
+		#output +=entry.get("type").split('[')+' '+entry.get("name")+'['+entry.get("Array")+'];\n'
+	#print entry.get("name")
+	#print entry.get("type").find("[")
+	#else:
+	output +=entry.get("type")+' '+entry.get("name")+';\n'
 
 output += "\n\n// -- Enum Definitions\n"
 for entry in root.findall("./enums/enum"):
@@ -67,7 +74,7 @@ output += "\n\n// -- Message Definitions\n"
 for entry in root.findall("./messages/message"):
 	output += 'typedef struct __roverlink_'+str(entry.get("name")).lower()+'_t {\n'
 	for value in entry.iter("field"):
-		output += '\t'+str(value.get("type"))+' '+str(value.get("name"))+',\n'
+		output += '\t'+str(value.get("type"))+' '+str(value.get("name"))+';\n'
 		# output += <todo> make comments appear
 	output += '} roverlink_'+str(entry.get("name")).lower()+'_t;\n\n'
 

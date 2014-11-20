@@ -12,11 +12,13 @@
 
 // Protocol notes are inserted at the bottom of this document.
 
-// Build Timestemp: 2014-10-30T18:14:05.123000
+// Build Timestemp: 2014-11-13T22:57:27.806000
+
+#include <stdint.h>
 
 // -- Constants
-constant uint8_t WRITE_BIT = 0x80;
-constant uint8_t REQUEST_BIT = 0x40;
+const uint8_t WRITE_BIT = 0x80;
+const uint8_t REQUEST_BIT = 0x40;
 
 
 // -- Typedefs
@@ -75,152 +77,152 @@ enum BROADCAST_COMMAND{
 
 // -- Message Definitions
 typedef struct __roverlink_health_heartbeat_t {
-	uint32_t systemTimestamp,
-	systemState_t systemState,
-	uint16_t cpuLoad,
-	uint16_t busErrors,
-	uint16_t ethernetErrors,
-	uint16_t someOtherMetric,
+	uint32_t systemTimestamp;
+	systemState_t systemState;
+	uint16_t cpuLoad;
+	uint16_t busErrors;
+	uint16_t ethernetErrors;
+	uint16_t someOtherMetric;
 } roverlink_health_heartbeat_t;
 
 typedef struct __roverlink_rover_status_t {
-	systemState_t systemState,
-	uint16_t roverVoltage,
-	int16_t roverCurrent,
-	int32_t mAhCounter,
-	uint16_t ubntLinkInteg,
-	uint16_t dragonLinkRSSI,
+	systemState_t systemState;
+	uint16_t roverVoltage;
+	int16_t roverCurrent;
+	int32_t mAhCounter;
+	uint16_t ubntLinkInteg;
+	uint16_t dragonLinkRSSI;
 } roverlink_rover_status_t;
 
 typedef struct __roverlink_arm_status_t {
-	uint8_t systemState,
-	uint16_t dynamixelErrors,
-	int16_t pid1_error,
-	int16_t pid2_error,
-	int16_t pid3_error,
+	uint8_t systemState;
+	uint16_t dynamixelErrors;
+	int16_t pid1_error;
+	int16_t pid2_error;
+	int16_t pid3_error;
 } roverlink_arm_status_t;
 
 typedef struct __roverlink_reserved_1_t {
 } roverlink_reserved_1_t;
 
 typedef struct __roverlink_gps_position_t {
-	int32_t lat,
-	int32_t lon,
-	int32_t alt,
-	uint16_t hdop,
-	uint16_t vdop,
-	uint16_t vel,
-	uint16_t course,
-	uint8_t fix_type,
-	uint8_t sats,
+	int32_t lat;
+	int32_t lon;
+	int32_t alt;
+	uint16_t hdop;
+	uint16_t vdop;
+	uint16_t vel;
+	uint16_t course;
+	uint8_t fix_type;
+	uint8_t sats;
 } roverlink_gps_position_t;
 
 typedef struct __roverlink_imu_sample_t {
-	int16_t xacc,
-	int16_t yacc,
-	int16_t zacc,
-	int16_t xgyro,
-	int16_t ygyro,
-	int16_t zgyro,
-	int16_t xmag,
-	int16_t ymag,
-	int16_t zmag,
+	int16_t xacc;
+	int16_t yacc;
+	int16_t zacc;
+	int16_t xgyro;
+	int16_t ygyro;
+	int16_t zgyro;
+	int16_t xmag;
+	int16_t ymag;
+	int16_t zmag;
 } roverlink_imu_sample_t;
 
 typedef struct __roverlink_reserved_2_t {
 } roverlink_reserved_2_t;
 
 typedef struct __roverlink_dragonlink_frame_t {
-	uint16_t ppmCh1,
-	uint16_t ppmCh2,
-	uint16_t ppmCh3,
-	uint16_t ppmCh4,
-	uint16_t ppmCh5,
-	uint16_t ppmCh6,
-	uint16_t ppmCh7,
-	uint16_t ppmCh8,
+	uint16_t ppmCh1;
+	uint16_t ppmCh2;
+	uint16_t ppmCh3;
+	uint16_t ppmCh4;
+	uint16_t ppmCh5;
+	uint16_t ppmCh6;
+	uint16_t ppmCh7;
+	uint16_t ppmCh8;
 } roverlink_dragonlink_frame_t;
 
 typedef struct __roverlink_drive_setpoints_t {
-	int16_t driveFwd,
-	int16_t driveTurn,
+	int16_t driveFwd;
+	int16_t driveTurn;
 } roverlink_drive_setpoints_t;
 
 typedef struct __roverlink_video_setpoints_t {
-	int16_t gimbalPan,
-	int16_t gimbalTilt,
-	uint16_t gimbalZoom,
-	int8_t camSelect,
+	int16_t gimbalPan;
+	int16_t gimbalTilt;
+	uint16_t gimbalZoom;
+	int8_t camSelect;
 } roverlink_video_setpoints_t;
 
 typedef struct __roverlink_arm_setpoints_t {
-	int16_t baseAzimuth,
-	int16_t shoulder,
-	int16_t elbow,
-	int16_t wristTilt,
-	int16_t wristRotate,
-	int16_t effectorA,
-	int16_t effectorB,
+	int16_t baseAzimuth;
+	int16_t shoulder;
+	int16_t elbow;
+	int16_t wristTilt;
+	int16_t wristRotate;
+	int16_t effectorA;
+	int16_t effectorB;
 } roverlink_arm_setpoints_t;
 
 typedef struct __roverlink_ishaama_t {
-	uint16_t hygrometer,
-	uint16_t phMeter,
+	uint16_t hygrometer;
+	uint16_t phMeter;
 } roverlink_ishaama_t;
 
 typedef struct __roverlink_liferay_t {
-	uint8_t laserDutyCycle,
+	uint8_t laserDutyCycle;
 } roverlink_liferay_t;
 
 typedef struct __roverlink_custom_debug_1_t {
-	uint16_t custom00,
-	uint16_t custom01,
-	uint16_t custom02,
-	uint16_t custom03,
-	uint16_t custom04,
-	uint16_t custom05,
-	uint16_t custom06,
-	uint16_t custom07,
+	uint16_t custom00;
+	uint16_t custom01;
+	uint16_t custom02;
+	uint16_t custom03;
+	uint16_t custom04;
+	uint16_t custom05;
+	uint16_t custom06;
+	uint16_t custom07;
 } roverlink_custom_debug_1_t;
 
 typedef struct __roverlink_custom_debug_2_t {
-	uint16_t custom20,
-	uint16_t custom21,
-	uint16_t custom22,
-	uint16_t custom23,
-	uint16_t custom24,
-	uint16_t custom25,
-	uint16_t custom26,
-	uint16_t custom27,
+	uint16_t custom20;
+	uint16_t custom21;
+	uint16_t custom22;
+	uint16_t custom23;
+	uint16_t custom24;
+	uint16_t custom25;
+	uint16_t custom26;
+	uint16_t custom27;
 } roverlink_custom_debug_2_t;
 
 typedef struct __roverlink_custom_debug_3_t {
-	uint16_t custom30,
-	uint16_t custom31,
-	uint16_t custom32,
-	uint16_t custom33,
-	uint16_t custom34,
-	uint16_t custom35,
-	uint16_t custom36,
-	uint16_t custom37,
+	uint16_t custom30;
+	uint16_t custom31;
+	uint16_t custom32;
+	uint16_t custom33;
+	uint16_t custom34;
+	uint16_t custom35;
+	uint16_t custom36;
+	uint16_t custom37;
 } roverlink_custom_debug_3_t;
 
 typedef struct __roverlink_ping_t {
-	uint8_t[8] payload,
+	uint8_t payload[8];
 } roverlink_ping_t;
 
 typedef struct __roverlink_telemetry_config_t {
-	messageMask_t telemetryMask_10HZ,
-	messageMask_t telemetryMask_1HZ,
-	messageMask_t telemetryMask_10SEC,
+	messageMask_t telemetryMask_10HZ;
+	messageMask_t telemetryMask_1HZ;
+	messageMask_t telemetryMask_10SEC;
 } roverlink_telemetry_config_t;
 
 typedef struct __roverlink_req_fields_once_t {
-	messageMask_t oneShotMask,
+	messageMask_t oneShotMask;
 } roverlink_req_fields_once_t;
 
 typedef struct __roverlink_broadcast_t {
-	broadcast_t broadcastCommand,
+	broadcast_t broadcastCommand;
 } roverlink_broadcast_t;
 
 #endif // ROVERLINK_H 

@@ -226,7 +226,7 @@
 		</message>
 		<message id="60" name="PING" access="READ_WRITE">
 			<description>Used to verify that the entire UDP comm system is functional. Payload proves this if uniquely generated at basestation and compared to response.</description>
-			<field type="uint8_t[8]" name="payload">Description</field>
+			<field type="uint8_t" name="payload[8]">Description</field>
 		</message>
 		<message id="61" name="TELEMETRY_CONFIG" access="READ_WRITE">
 			<description>The 16 rover messages can be assigned to send cyclically by setting bits in these bitmasks.</description>
