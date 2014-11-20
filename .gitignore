@@ -1,3 +1,20 @@
+# BYU Mars Rover Code Base - GIT Ignore File
+# For the uninitiated, this thing tells GIT to ignore files that match the patterns defined here.
+
+*.pdf
+*.hex
+*.elf
+codegentemp/
+Generated_Source/
+Debug/
+*.zip
+
+
+
+
+
+
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
