@@ -12,13 +12,83 @@
 
 // Protocol notes are inserted at the bottom of this document.
 
-// Build Timestemp: 2014-11-13T22:57:27.806000
+// Build Timestemp: 2014-11-21T07:43:02.793000
 
 #include <stdint.h>
 
+// -- Defines
+#define ROVERLINK_SYS_HEALTH_MSG_ID	0
+#define ROVERLINK_ROVER_STATUS_MSG_ID	1
+#define ROVERLINK_ARM_STATUS_MSG_ID	2
+#define ROVERLINK_RESERVED_1_MSG_ID	3
+#define ROVERLINK_GPS_MSG_ID	4
+#define ROVERLINK_IMU_MSG_ID	5
+#define ROVERLINK_RESERVED_2_MSG_ID	6
+#define ROVERLINK_LRS_MSG_ID	7
+#define ROVERLINK_DRIVE_MSG_ID	8
+#define ROVERLINK_VIDEO_MSG_ID	9
+#define ROVERLINK_ARM_MSG_ID	10
+#define ROVERLINK_ISHAAMA_MSG_ID	11
+#define ROVERLINK_LIFERAY_MSG_ID	12
+#define ROVERLINK_CUSTOM_DEBUG_1_MSG_ID	13
+#define ROVERLINK_CUSTOM_DEBUG_2_MSG_ID	14
+#define ROVERLINK_CUSTOM_DEBUG_3_MSG_ID	15
+#define ROVERLINK_PING_MSG_ID	60
+#define ROVERLINK_TELEMETRY_CONFIG_MSG_ID	61
+#define ROVERLINK_REQ_FIELDS_ONCE_MSG_ID	62
+#define ROVERLINK_BROADCAST_MSG_ID	63
+
+
+#define ROVERLINK_SYS_HEALTH_MSG_LEN	13
+#define ROVERLINK_ROVER_STATUS_MSG_LEN	13
+#define ROVERLINK_ARM_STATUS_MSG_LEN	9
+#define ROVERLINK_RESERVED_1_MSG_LEN	0
+#define ROVERLINK_GPS_MSG_LEN	26
+#define ROVERLINK_IMU_MSG_LEN	18
+#define ROVERLINK_RESERVED_2_MSG_LEN	0
+#define ROVERLINK_LRS_MSG_LEN	16
+#define ROVERLINK_DRIVE_MSG_LEN	4
+#define ROVERLINK_VIDEO_MSG_LEN	7
+#define ROVERLINK_ARM_MSG_LEN	14
+#define ROVERLINK_ISHAAMA_MSG_LEN	4
+#define ROVERLINK_LIFERAY_MSG_LEN	1
+#define ROVERLINK_CUSTOM_DEBUG_1_MSG_LEN	16
+#define ROVERLINK_CUSTOM_DEBUG_2_MSG_LEN	16
+#define ROVERLINK_CUSTOM_DEBUG_3_MSG_LEN	16
+#define ROVERLINK_PING_MSG_LEN	1
+#define ROVERLINK_TELEMETRY_CONFIG_MSG_LEN	6
+#define ROVERLINK_REQ_FIELDS_ONCE_MSG_LEN	2
+#define ROVERLINK_BROADCAST_MSG_LEN	1
+
+
 // -- Constants
-const uint8_t WRITE_BIT = 0x80;
-const uint8_t REQUEST_BIT = 0x40;
+
+
+const uint8_t ROVERLINK_MSG_LEN_ARRAY[] = {
+	ROVERLINK_SYS_HEALTH_MSG_LEN,
+	ROVERLINK_ROVER_STATUS_MSG_LEN,
+	ROVERLINK_ARM_STATUS_MSG_LEN,
+	ROVERLINK_RESERVED_1_MSG_LEN,
+	ROVERLINK_GPS_MSG_LEN,
+	ROVERLINK_IMU_MSG_LEN,
+	ROVERLINK_RESERVED_2_MSG_LEN,
+	ROVERLINK_LRS_MSG_LEN,
+	ROVERLINK_DRIVE_MSG_LEN,
+	ROVERLINK_VIDEO_MSG_LEN,
+	ROVERLINK_ARM_MSG_LEN,
+	ROVERLINK_ISHAAMA_MSG_LEN,
+	ROVERLINK_LIFERAY_MSG_LEN,
+	ROVERLINK_CUSTOM_DEBUG_1_MSG_LEN,
+	ROVERLINK_CUSTOM_DEBUG_2_MSG_LEN,
+	ROVERLINK_CUSTOM_DEBUG_3_MSG_LEN,
+	ROVERLINK_PING_MSG_LEN,
+	ROVERLINK_TELEMETRY_CONFIG_MSG_LEN,
+	ROVERLINK_REQ_FIELDS_ONCE_MSG_LEN,
+	ROVERLINK_BROADCAST_MSG_LEN,
+	};
+const uint8_t ROVERLINK_WRITE = 0xC0;
+const uint8_t ROVERLINK_REQUEST = 0x40;
+const uint8_t ROVERLINK_RESPONSE = 0x00;
 
 
 // -- Typedefs
@@ -28,13 +98,16 @@ typedef uint8_t broadcast_t;
 
 
 // -- Enum Definitions
+// List of aliases. Entries represent the last entry in IP address. (192.168.1.1 for Basestation, 1.10 for Arm, etc)
 enum BOARD_ID{
-	BASESTATION = 0,
-	MAIN_CONTROLLER = 1,
-	ARM_CONTROLLER = 2,
-	BASESTATION_2 = 8,
+	BASESTATION_1 = 1,
+	BASESTATION_2 = 2,
+	BASESTATION_3 = 3,
+	MAIN_CONTROLLER = 13,
+	ARM_CONTROLLER = 10,
 };
 
+// systemState field in the heartbeat and status messages that indicates board health
 enum SYSTEM_STATE{
 	STARTUP = 0,
 	NORMAL = 1,
@@ -42,6 +115,7 @@ enum SYSTEM_STATE{
 	ERROR = 3,
 };
 
+// fix_type in the GPS message
 enum GPS_FIX_TYPE{
 	NONE = 0,
 	FIX_2D = 1,
@@ -49,18 +123,19 @@ enum GPS_FIX_TYPE{
 	OTHER = 3,
 };
 
+// The Telemetry Config and One-Shot Message Mask. Basically, 2^(Message Id) forms the bitmask field.
 enum MESSAGE_MASK{
-	HEALTH_HEARTBEAT = 0x0001,
+	SYS_HEALTH = 0x0001,
 	ROVER_STATUS = 0x0002,
 	ARM_STATUS = 0x0004,
 	RESERVED_1 = 0x0008,
-	GPS_POSITION = 0x0010,
-	IMU_SAMPLE = 0x0020,
+	GPS = 0x0010,
+	IMU = 0x0020,
 	RESERVED_2 = 0x0040,
-	DRAGONLINK_FRAME = 0x0080,
-	DRIVE_SETPOINTS = 0x0100,
-	VIDEO_SETPOINTS = 0x0200,
-	ARM_SETPOINTS = 0x0400,
+	LRS = 0x0080,
+	DRIVE = 0x0100,
+	VIDEO = 0x0200,
+	ARM = 0x0400,
 	ISHAAMA = 0x0800,
 	LIFERAY = 0x1000,
 	CUSTOM_DEBUG_1 = 0x2000,
@@ -68,6 +143,7 @@ enum MESSAGE_MASK{
 	CUSTOM_DEBUG_3 = 0x8000,
 };
 
+// Broadcast Message
 enum BROADCAST_COMMAND{
 	SAVE_FAILSAFE_VALUES_NOW = 0x01,
 	PANIC_STOP = 0xF0,
@@ -75,156 +151,198 @@ enum BROADCAST_COMMAND{
 
 
 
-// -- Message Definitions
-typedef struct __roverlink_health_heartbeat_t {
-	uint32_t systemTimestamp;
-	systemState_t systemState;
-	uint16_t cpuLoad;
-	uint16_t busErrors;
-	uint16_t ethernetErrors;
-	uint16_t someOtherMetric;
-} roverlink_health_heartbeat_t;
+// -- Message Type-Definitions
+// Each board must provide a status report of its health periodically.
+typedef struct __roverlink_sys_health_t {
+	uint32_t systemTimestamp;	// Milliseconds from boot
+	systemState_t systemState;	// System status code, see enum definition
+	uint16_t cpuLoad;	// The CPU Load, 0% means idle, 100% means saturated
+	uint16_t busErrors;	// Count of I2C/SPI Bus errors
+	uint16_t ethernetErrors;	// Count of Ethernet errors
+	uint16_t someOtherMetric;	// Probably packet lag time, etc
+} roverlink_sys_health_t;
 
+// The Main Controller Board handles the Camera and Gimbal, Drive and Power systems.
 typedef struct __roverlink_rover_status_t {
-	systemState_t systemState;
-	uint16_t roverVoltage;
-	int16_t roverCurrent;
-	int32_t mAhCounter;
-	uint16_t ubntLinkInteg;
-	uint16_t dragonLinkRSSI;
+	systemState_t systemState;	// System status code, see enum definition
+	uint16_t roverVoltage;	// Voltage in mV, Ex: 12450 means 12.450 Volts
+	int16_t roverCurrent;	// Current in 10mA, Ex: 16500 means 165.00 Amps
+	int32_t mAhCounter;	// Battery used in mAh
+	uint16_t ubntLinkInteg;	// 100% means perfect link, 0% is lost link, in 0.1% units
+	uint16_t dragonLinkRSSI;	// Same as ubntLinkInteg, for backup-link LRS receiver
 } roverlink_rover_status_t;
 
+// The Arm Controller Board handles the Arm, including PID controllers. May also handle soil taster "ISHAAMA".
 typedef struct __roverlink_arm_status_t {
-	uint8_t systemState;
-	uint16_t dynamixelErrors;
-	int16_t pid1_error;
-	int16_t pid2_error;
-	int16_t pid3_error;
+	uint8_t systemState;	// System status code
+	uint16_t dynamixelErrors;	// Number of bad reads or writes to Dynamixel servos.
+	int16_t pid1_error;	// Error as in the error term, a scalar value.
+	int16_t pid2_error;	// Same as above, for the 2nd PID controller
+	int16_t pid3_error;	// Same as above, for the 3rd PID controller
 } roverlink_arm_status_t;
 
+// Reserved for future use.
 typedef struct __roverlink_reserved_1_t {
 } roverlink_reserved_1_t;
 
-typedef struct __roverlink_gps_position_t {
-	int32_t lat;
-	int32_t lon;
-	int32_t alt;
-	uint16_t hdop;
-	uint16_t vdop;
-	uint16_t vel;
-	uint16_t course;
-	uint8_t fix_type;
-	uint8_t sats;
-} roverlink_gps_position_t;
+// Parsed NMEA sentence data. May disband these fields in favor of echoing entire NMEA sentence.
+typedef struct __roverlink_gps_t {
+	uint32_t systemTimestamp;	// Milliseconds from boot
+	int32_t lat;	// Latitude in 1E-7 units
+	int32_t lon;	// Longitude in 1e-7 units
+	int32_t alt;	// Altitude in millimeters
+	uint16_t hdop;	// Horizontal DOP in centimeters
+	uint16_t vdop;	// Vertical DOP in centimeters
+	uint16_t vel;	// Velocity in cm/sec
+	uint16_t course;	// Course in 0.1 degrees units
+	uint8_t fix_type;	// Fix Type, see the enum definition
+	uint8_t sats;	// Number of satellites locked on
+} roverlink_gps_t;
 
-typedef struct __roverlink_imu_sample_t {
-	int16_t xacc;
-	int16_t yacc;
-	int16_t zacc;
-	int16_t xgyro;
-	int16_t ygyro;
-	int16_t zgyro;
-	int16_t xmag;
-	int16_t ymag;
-	int16_t zmag;
-} roverlink_imu_sample_t;
+// The samples from the IMU, probably a MPU-9250. North-East-Down conventions.
+typedef struct __roverlink_imu_t {
+	int16_t xacc;	// X Acceleration, Front+
+	int16_t yacc;	// Y Acceleration, Starboard+
+	int16_t zacc;	// Z Acceleration, Down+
+	int16_t xgyro;	// X Rotation Rate
+	int16_t ygyro;	// Y Rotation Rate
+	int16_t zgyro;	// Z Rotation Rate
+	int16_t xmag;	// X B-Field Component
+	int16_t ymag;	// Y B-Field Component
+	int16_t zmag;	// Z B-Field Component
+} roverlink_imu_t;
 
+// Reserved for future use.
 typedef struct __roverlink_reserved_2_t {
 } roverlink_reserved_2_t;
 
-typedef struct __roverlink_dragonlink_frame_t {
-	uint16_t ppmCh1;
-	uint16_t ppmCh2;
-	uint16_t ppmCh3;
-	uint16_t ppmCh4;
-	uint16_t ppmCh5;
-	uint16_t ppmCh6;
-	uint16_t ppmCh7;
-	uint16_t ppmCh8;
-} roverlink_dragonlink_frame_t;
+// The DragonLink LRS is the backup R/C receiver on the rover, for if the Rocket M2 modems lose link.
+typedef struct __roverlink_lrs_t {
+	uint16_t ppmCh1;	// Channel 1, usually Roll (Rover Left-Right)
+	uint16_t ppmCh2;	// Channel 2, usually Pitch (Rover Foward-Back)
+	uint16_t ppmCh3;	// Channel 3, throttle stick (Gimbal Tilt)
+	uint16_t ppmCh4;	// Channel 4, rudder (Gimbal Pan)
+	uint16_t ppmCh5;	// Channel 5
+	uint16_t ppmCh6;	// Channel 6
+	uint16_t ppmCh7;	// Channel 7, Backup-Link Asserts control if >1800us, doubles as Panic Stop
+	uint16_t ppmCh8;	// Channel 8, DragonLink in Failsafe Mode if >1800us
+} roverlink_lrs_t;
 
-typedef struct __roverlink_drive_setpoints_t {
-	int16_t driveFwd;
-	int16_t driveTurn;
-} roverlink_drive_setpoints_t;
+// Drive commands for rover movement.
+typedef struct __roverlink_drive_t {
+	int16_t driveFwd;	// Forward Drive Component
+	int16_t driveTurn;	// Turning Drive Component
+} roverlink_drive_t;
 
-typedef struct __roverlink_video_setpoints_t {
-	int16_t gimbalPan;
-	int16_t gimbalTilt;
-	uint16_t gimbalZoom;
-	int8_t camSelect;
-} roverlink_video_setpoints_t;
+// Camera selection and zoom, Gimbal Pan and Tilt.
+typedef struct __roverlink_video_t {
+	int16_t gimbalPan;	// Gimbal Pan Value
+	int16_t gimbalTilt;	// Gimbal Tilt Value
+	uint16_t gimbalZoom;	// Gimbal Zoom Value
+	int8_t camSelect;	// Camera Mux Selector
+} roverlink_video_t;
 
-typedef struct __roverlink_arm_setpoints_t {
-	int16_t baseAzimuth;
-	int16_t shoulder;
-	int16_t elbow;
-	int16_t wristTilt;
-	int16_t wristRotate;
-	int16_t effectorA;
-	int16_t effectorB;
-} roverlink_arm_setpoints_t;
+// Arm/joint positions and Drill and Claw setpoints.
+typedef struct __roverlink_arm_t {
+	int16_t baseAzimuth;	// Also known as turret, pans entire arm
+	int16_t shoulder;	// Shoulder: first pitch joint
+	int16_t elbow;	// Elbow: second pitch joint
+	int16_t wristTilt;	// Wrist flap motion, final pitch joint
+	int16_t wristRotate;	// Wrist roll motion
+	int16_t effectorA;	// Open/Close Claw
+	int16_t effectorB;	// Roller or Drill, configuration-dependant
+} roverlink_arm_t;
 
+// The soil taste tester. Likely is Read-Only, nothing to write to. Assuming 12-bit ADC
 typedef struct __roverlink_ishaama_t {
-	uint16_t hygrometer;
-	uint16_t phMeter;
+	uint16_t hygrometer;	// The Soil Hygrometer probe
+	uint16_t phMeter;	// The Soil ph Meter probe
 } roverlink_ishaama_t;
 
+// Big scary laser.
 typedef struct __roverlink_liferay_t {
-	uint8_t laserDutyCycle;
+	uint8_t laserDutyCycle;	// Set the laser's intensity
 } roverlink_liferay_t;
 
+// All the custom fields can be anything, but the payload size (16 bytes) is constant.
 typedef struct __roverlink_custom_debug_1_t {
-	uint16_t custom00;
-	uint16_t custom01;
-	uint16_t custom02;
-	uint16_t custom03;
-	uint16_t custom04;
-	uint16_t custom05;
-	uint16_t custom06;
-	uint16_t custom07;
+	uint16_t custom00;	// Dynamixel Servo 1 Stress/Current Value
+	uint16_t custom01;	// Dynamixel Servo 2 Stress/Current Value
+	uint16_t custom02;	// Dynamixel Servo 3 Stress/Current Value
+	uint16_t custom03;	// Dynamixel Servo 4 Stress/Current Value
+	uint16_t custom04;	// Description
+	uint16_t custom05;	// Description
+	uint16_t custom06;	// Description
+	uint16_t custom07;	// Description
 } roverlink_custom_debug_1_t;
 
+// All the custom fields can be anything, but the payload size (16 bytes) is constant.
 typedef struct __roverlink_custom_debug_2_t {
-	uint16_t custom20;
-	uint16_t custom21;
-	uint16_t custom22;
-	uint16_t custom23;
-	uint16_t custom24;
-	uint16_t custom25;
-	uint16_t custom26;
-	uint16_t custom27;
+	uint16_t custom20;	// Description
+	uint16_t custom21;	// Description
+	uint16_t custom22;	// Description
+	uint16_t custom23;	// Description
+	uint16_t custom24;	// Description
+	uint16_t custom25;	// Description
+	uint16_t custom26;	// Description
+	uint16_t custom27;	// Description
 } roverlink_custom_debug_2_t;
 
+// All the custom fields can be anything, but the payload size (16 bytes) is constant.
 typedef struct __roverlink_custom_debug_3_t {
-	uint16_t custom30;
-	uint16_t custom31;
-	uint16_t custom32;
-	uint16_t custom33;
-	uint16_t custom34;
-	uint16_t custom35;
-	uint16_t custom36;
-	uint16_t custom37;
+	uint16_t custom30;	// Description
+	uint16_t custom31;	// Description
+	uint16_t custom32;	// Description
+	uint16_t custom33;	// Description
+	uint16_t custom34;	// Description
+	uint16_t custom35;	// Description
+	uint16_t custom36;	// Description
+	uint16_t custom37;	// Description
 } roverlink_custom_debug_3_t;
 
+// Used to verify that the entire UDP comm system is functional. Payload proves this if uniquely generated at basestation and compared to response.
 typedef struct __roverlink_ping_t {
-	uint8_t payload[8];
+	uint8_t payload[8];	// Description
 } roverlink_ping_t;
 
+// The 16 rover messages can be assigned to send cyclically by setting bits in these bitmasks.
 typedef struct __roverlink_telemetry_config_t {
-	messageMask_t telemetryMask_10HZ;
-	messageMask_t telemetryMask_1HZ;
-	messageMask_t telemetryMask_10SEC;
+	messageMask_t telemetryMask_10HZ;	// Fast Telemetry Loop
+	messageMask_t telemetryMask_1HZ;	// Intermediate Loop
+	messageMask_t telemetryMask_10SEC;	// Slow Loop
 } roverlink_telemetry_config_t;
 
+// Just one time instead of configuring continuous telemetry. Probably superfiluous if Read/Write mechanism of this protocol can stimulate a single register.
 typedef struct __roverlink_req_fields_once_t {
-	messageMask_t oneShotMask;
+	messageMask_t oneShotMask;	// Request a set of messages only one time, not set for cyclic
 } roverlink_req_fields_once_t;
 
+// Broadcast a message to all controller boards at once. Used for universal commands like Panic Stop, etc
 typedef struct __roverlink_broadcast_t {
-	broadcast_t broadcastCommand;
+	broadcast_t broadcastCommand;	// See broadcast_t description
 } roverlink_broadcast_t;
 
+
+
+// -- Message Data Structure Instances
+static roverlink_sys_health_t sys_health;
+static roverlink_rover_status_t rover_status;
+static roverlink_arm_status_t arm_status;
+static roverlink_gps_t gps;
+static roverlink_imu_t imu;
+static roverlink_lrs_t lrs;
+static roverlink_drive_t drive;
+static roverlink_video_t video;
+static roverlink_arm_t arm;
+static roverlink_ishaama_t ishaama;
+static roverlink_liferay_t liferay;
+static roverlink_custom_debug_1_t custom_debug_1;
+static roverlink_custom_debug_2_t custom_debug_2;
+static roverlink_custom_debug_3_t custom_debug_3;
+static roverlink_ping_t ping;
+static roverlink_telemetry_config_t telemetry_config;
+static roverlink_req_fields_once_t req_fields_once;
+static roverlink_broadcast_t broadcast;
 #endif // ROVERLINK_H 
 
 

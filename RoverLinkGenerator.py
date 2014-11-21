@@ -48,9 +48,35 @@ output = '''#ifndef ROVERLINK_H
 output += '\n// Build Timestemp: '+str(datetime.datetime.utcnow().isoformat())
 
 output += '\n\n#include <stdint.h>'
+
+
+output += "\n\n// -- Defines\n"
+for entry in root.findall("./messages/message"):
+	output += '#define ROVERLINK_'+str(entry.get("name")).upper()+'_MSG_ID\t'+str(entry.get("id"))+'\n'
+
+output += "\n\n"
+for entry in root.findall("./messages/message"):
+	output += '#define ROVERLINK_'+str(entry.get("name")).upper()+'_MSG_LEN\t'
+	byteCount = 0;
+	for value in entry.iter("field"):
+		if "int8_t" in str(value.get("type")): byteCount += 1
+		elif "int16_t" in str(value.get("type")): byteCount += 2
+		elif "int32_t" in str(value.get("type")): byteCount += 4
+		elif "int64_t" in str(value.get("type")): byteCount += 8
+		elif "systemState_t" in str(value.get("type")): byteCount += 1
+		elif "messageMask_t" in str(value.get("type")): byteCount += 2
+		elif "broadcast_t" in str(value.get("type")): byteCount += 1
+	output += str(byteCount)+'\n'
+	
+	
 output += "\n\n// -- Constants\n"
+output += "\n\nconst uint8_t ROVERLINK_MSG_LEN_ARRAY[] = {\n\t"
+for entry in root.findall("./messages/message"):
+	output += 'ROVERLINK_'+str(entry.get("name")).upper()+'_MSG_LEN,\n\t'
+output += '};\n'
+
 for entry in root.findall("./constants/constant"):
-	output += 'const '+entry.get("type")+' '+entry.get("name")+' = '+entry.get("value")+';\n'
+	output += 'const '+entry.get("type")+' ROVERLINK_'+entry.get("name")+' = '+entry.get("value")+';\n'
 
 output += "\n\n// -- Typedefs\n"
 for entry in root.findall("./typedefs/typedef"):
@@ -65,19 +91,26 @@ for entry in root.findall("./typedefs/typedef"):
 
 output += "\n\n// -- Enum Definitions\n"
 for entry in root.findall("./enums/enum"):
+	output += "// "+entry.find("description").text+"\n"
 	output += 'enum '+entry.get("name")+'{\n'
 	for value in entry.iter("entry"):
 		output += '\t'+str(value.get("name"))+' = '+str(value.get("value"))+',\n'
 	output += '};\n\n'
 
-output += "\n\n// -- Message Definitions\n"
+output += "\n\n// -- Message Type-Definitions\n"
 for entry in root.findall("./messages/message"):
+	output += "// "+entry.find("description").text+"\n"
 	output += 'typedef struct __roverlink_'+str(entry.get("name")).lower()+'_t {\n'
 	for value in entry.iter("field"):
-		output += '\t'+str(value.get("type"))+' '+str(value.get("name"))+';\n'
-		# output += <todo> make comments appear
+		output += '\t'+str(value.get("type"))+' '+str(value.get("name"))+';' #\n'
+		output += "\t// "+value.text+"\n"
 	output += '} roverlink_'+str(entry.get("name")).lower()+'_t;\n\n'
 
+output += "\n\n// -- Message Data Structure Instances\n"
+for entry in root.findall("./messages/message"):
+	if entry.find("field") != None: output += 'static roverlink_'+str(entry.get("name")).lower()+'_t '+str(entry.get("name")).lower()+';\n'
+	
+	
 output += "#endif // ROVERLINK_H"
 
 output += ''' \n\n

@@ -50,13 +50,16 @@ void wiznetInit(uint8_t ownIpAddr, uint8_t dstIpAddr, uint16_t dstUdpPort){
 	udpConfig[5] = ephemUdpPort&0xFF;
 	
 	
-	
+	// Write all the thus prepared values to the WizNet Module and Open the Socket
 	wiznetWriteArray(WIZNET_MR,WIZNET_BLK_COMMON,cmdArray,sizeof(cmdArray));
 	wiznetWriteArray(WIZNET_Sn_MR,WIZNET_BLK_S0_REG,udpConfig,sizeof(udpConfig));
 	wiznetWriteArray(WIZNET_SHAR,WIZNET_BLK_COMMON,wiznetOldMacAddr,6);
-	wiznetWrite16b(0x12,WIZNET_BLK_S0_REG,WIZ_MAX_MESSAGE_SEGMENT);
+	wiznetWrite16b(WIZNET_Sn_MSSR,WIZNET_BLK_S0_REG,WIZ_MAX_MESSAGE_SEGMENT);
 	CyDelay(100);
 	wiznetOpen();
+	
+	// Configure Wiznet Interrupts
+	wiznetConfigInterrupts(0x00,WIZNET_Sn_IMR_SEND_OK);
 
 	// Write sequential values to the TX Buffer, to know where on earth it is writing from.
 	WIZ_SS_Write(LOW); // Begin a WizNet SPI Frame. Three Phases: Address, Control, Data
@@ -87,16 +90,43 @@ void wiznetClose(void){
 }
 
 void wiznetSend(void){
+	wiznetWrite16b(WIZNET_Sn_TX_WR,WIZNET_BLK_S0_REG,wiznetTxPointer);
 	wiznetWrite8b(WIZNET_Sn_CR,WIZNET_BLK_S0_REG,0x20);
+	wiznetTxPointer = wiznetRead16b(WIZNET_Sn_TX_WR,WIZNET_BLK_S0_REG);
+}
+
+// void wiznetReceive(void){
+	
+// }
+
+// uint8_t wiznetReadInterrupts(void){
+// }
+
+void wiznetClearInterrupts(void){
+	wiznetWrite8b(WIZNET_Sn_IR,WIZNET_BLK_S0_REG, 0xFF);
+	wiznetWrite8b(WIZNET_SIR,WIZNET_BLK_COMMON, 0xFF);
+	wiznetWrite8b(WIZNET_IR,WIZNET_BLK_COMMON, 0xFF); // Counter-intuitive, but datasheet specifies writing '1' to clear to '0'.
+}
+
+void wiznetConfigInterrupts(uint8_t commonInt, uint8_t socketInt){
+	wiznetWrite8b(WIZNET_Sn_IMR,WIZNET_BLK_S0_REG, socketInt);
+	wiznetWrite8b(WIZNET_SIMR,WIZNET_BLK_COMMON, 0x01); // Hardwired to just Socket 0
+	wiznetWrite8b(WIZNET_IMR,WIZNET_BLK_COMMON, commonInt);
 }
 
 uint16_t wiznetWriteUdpFrame(uint8_t *array, uint16_t len){
 	
-	wiznetTxPointer = wiznetRead16b(WIZNET_Sn_TX_WR,WIZNET_BLK_S0_REG);
+	// wiznetTxPointer = wiznetRead16b(WIZNET_Sn_TX_WR,WIZNET_BLK_S0_REG);
+	// wiznetWriteArray(wiznetTxPointer,WIZNET_BLK_S0_TX,array,len);
+	// wiznetTxPointer += len;																	
+	// wiznetWrite16b(WIZNET_Sn_TX_WR,WIZNET_BLK_S0_REG,wiznetTxPointer);
+	
+	// Re-ordered the above and put the pointer manip in the Send method due to fluke.
 	wiznetWriteArray(wiznetTxPointer,WIZNET_BLK_S0_TX,array,len);
-	wiznetTxPointer += len;																// Lets force the increment beyond what it should be.		
-	wiznetWrite16b(WIZNET_Sn_TX_WR,WIZNET_BLK_S0_REG,wiznetTxPointer);
-
+	wiznetTxPointer += len;
+	
+	// CyDelay(10); // These two lines proved that the fluke with the WizNet is not time-variant
+	// wiznetRead16b(WIZNET_Sn_TX_WR,WIZNET_BLK_S0_REG);
 	return wiznetTxPointer;
 }
 
